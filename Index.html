@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VLTD - Valet Redefined</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:100vh}
+.header{padding:32px 28px 20px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:900;color:#C8F04B}
+.logo-sub{font-size:10px;color:#555;margin-top:2px;letter-spacing:2px}
+.tabs{display:flex;gap:6px}
+.tab{padding:8px 16px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;border:1px solid #2a2a2a;background:transparent;color:#666;cursor:pointer;text-transform:uppercase}
+.tab.active{background:#C8F04B;color:#000;border-color:#C8F04B}
+.content{padding:28px}
+.role-toggle{display:flex;background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:4px;margin-bottom:28px;width:fit-content}
+.role-btn{padding:10px 24px;border-radius:9px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;background:transparent;color:#555;border:none;cursor:pointer}
+.role-btn.active{background:#C8F04B;color:#000}
+.step{background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:16px 20px;display:flex;align-items:flex-start;gap:16px;margin-bottom:10px;cursor:pointer}
+.step.active{background:#1a1a1a;border-color:#C8F04B55}
+.step-icon{width:36px;height:36px;border-radius:10px;background:#1e1e1e;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.step.active .step-icon{background:#C8F04B22;border-color:#C8F04B44}
+.step-num{font-size:10px;color:#444;letter-spacing:1.5px}
+.step.active .step-num{color:#C8F04B}
+.step-label{font-family:'Unbounded',sans-serif;font-size:12px;color:#bbb}
+.step.active .step-label{color:#fff;font-weight:700}
+.step-detail{font-size:12px;color:#777;line-height:1.6;margin-top:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:#C8F04B;flex-shrink:0;margin-top:6px}
+.callout{margin-top:28px;background:linear-gradient(135deg,#C8F04B0a,#C8F04B04);border:1px solid #C8F04B22;border-radius:14px;padding:16px 20px}
+.callout-title{font-size:10px;letter-spacing:2px;color:#C8F04B;margin-bottom:8px}
+.phones{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.phone-wrap{text-align:center}
+.phone-label{font-size:10px;letter-spacing:2px;color:#555;margin-bottom:12px}
+.phone{background:#111;border:2px solid #2a2a2a;border-radius:36px;overflow:hidden;width:260px;height:520px;position:relative;box-shadow:0 0 60px rgba(200,240,75,0.06)}
+.notch-bar{background:#0D0D0D;padding:10px 0 0}
+.notch{width:80px;height:22px;background:#0D0D0D;border-radius:0 0 14px 14px;margin:0 auto}
+.phone-inner{padding:16px;height:calc(100% - 32px);display:flex;flex-direction:column}
+.status-bar{display:flex;justify-content:space-between;font-size:9px;color:#444;margin-bottom:16px}
+.btn-accent{background:#C8F04B;color:#000;border:none;border-radius:14px;padding:14px;width:100%;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px}
+.btn-outline{background:transparent;border:1px solid #2a2a2a;border-radius:8px;padding:8px 20px;color:#555;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:12px;margin-bottom:16px}
+.card-label{font-size:9px;color:#555;letter-spacing:1.5px;margin-bottom:8px}
+.confirm-box{background:#C8F04B15;border:1px solid #C8F04B44;border-radius:10px;padding:10px 12px;text-align:center;margin-bottom:12px}
+.confirm-num{font-size:16px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700;letter-spacing:3px}
+.success-box{text-align:center;padding:14px;background:#1a2a0a;border:1px solid #C8F04B44;border-radius:14px;margin-bottom:10px}
+.tip-row{display:flex;gap:6px}
+.tip-btn{flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:10px 0;color:#bbb;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer}
+.hidden{display:none}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:0.7}}
+.fade-in{animation:fadeIn 0.4s ease forwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div class="logo">VLTD</div><div class="logo-sub">VALET · REDEFINED</div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('flow')">Flow</button>
+    <button class="tab" onclick="showTab('proto')">Prototype</button>
+  </div>
+</div>
+
+<div id="flow" class="content">
+  <div class="role-toggle">
+    <button class="role-btn active" onclick="showRole('valet')">🧥 Valet</button>
+    <button class="role-btn" onclick="showRole('customer')">👤 Customer</button>
+  </div>
+  <div id="steps"></div>
+  <div class="callout">
+    <div class="callout-title">KEY MECHANIC</div>
+    <div style="font-size:13px;color:#ccc;line-height:1.6">NFC tap fires a unique URL to the customer's phone in under a second — no app, no friction. SMS fallback auto-triggers if NFC fails.</div>
+  </div>
+</div>
+
+<div id="proto" class="content hidden">
+  <div style="font-size:10px;letter-spacing:2px;color:#555;margin-bottom:24px">INTERACTIVE DEMO</div>
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">VALET DEVICE</div>
+      <div class="phone">
+        <div class="notch-bar"><div class="notch"></div></div>
+        <div class="phone-inner">
+          <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+          <div style="font-family:'Unbounded',sans-serif;font-size:13px;color:#C8F04B;margin-bottom:4px;font-weight:700">VLTD</div>
+          <div style="font-size:9px;color:#444;letter-spacing:1.5px;margin-bottom:20px">VALET MODE · ACTIVE</div>
+          <div class="card">
+            <div class="card-label">INCOMING VEHICLE</div>
+            <div style="font-size:14px;font-family:'Unbounded',sans-serif;color:#fff;margin-bottom:4px">7LMK 293</div>
+            <div style="font-size:10px;color:#666">Black Tesla Model S · Spot B-14</div>
+          </div>
+          <div id="valet-idle">
+            <button class="btn-accent" onclick="doTap()">📲 TAP TO SEND</button>
+          </div>
+          <div id="valet-tapping" class="hidden" style="text-align:center;padding:14px;background:#C8F04B15;border:1px solid #C8F04B44;border-radius:14px;margin-bottom:10px">
+            <div class="pulse" style="font-size:28px">📡</div>
+            <div style="font-size:10px;color:#C8F04B;margin-top:8px;letter-spacing:1.5px">HOLD NEAR PHONE...</div>
+          </div>
+          <div id="valet-sent" class="hidden success-box">
+            <div style="font-size:22px">✅</div>
+            <div style="font-size:10px;color:#C8F04B;margin-top:6px;letter-spacing:1.5px">TICKET SENT</div>
+            <div style="margin-top:10px;background:#0D0D0D;border:1px solid #C8F04B33;border-radius:8px;padding:8px 12px">
+              <div style="font-size:8px;color:#555;letter-spacing:1.5px;margin-bottom:4px">CONFIRMATION</div>
+              <div id="valet-code" style="font-size:13px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700;letter-spacing:2px"></div>
+            </div>
+          </div>
+          <div id="valet-waiting" class="hidden" style="font-size:9px;color:#444;text-align:center;letter-spacing:1px">WAITING FOR RETRIEVAL...</div>
+          <div id="valet-alert" class="hidden" style="background:#1a1500;border:1px solid #ffcc0044;border-radius:12px;padding:12px">
+            <div style="font-size:9px;color:#ffcc00;letter-spacing:1.5px;margin-bottom:6px">🔔 CAR REQUESTED</div>
+            <div style="font-size:10px;color:#bbb">Black Tesla · Spot B-14</div>
+            <div style="font-size:9px;color:#666;margin-top:4px">ETA requested: Now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-label">CUSTOMER DEVICE</div>
+      <div class="phone">
+        <div class="notch-bar"><div class="notch"></div></div>
+        <div class="phone-inner">
+          <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+          <div id="cust-waiting" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#333">
+            <div style="font-size:32px;margin-bottom:12px">📵</div>
+            <div style="font-size:10px;letter-spacing:1.5px">AWAITING TAP...</div>
+          </div>
+          <div id="cust-ticket" class="hidden fade-in" style="flex:1;display:flex;flex-direction:column">
+            <div style="background:linear-gradient(135deg,#1a1a1a,#111);border:1px solid #C8F04B33;border-radius:16px;padding:16px;margin-bottom:12px;flex:1">
+              <div style="font-size:9px;color:#C8F04B;letter-spacing:2px;margin-bottom:10px">VALET TICKET</div>
+              <div style="font-size:18px;font-family:'Unbounded',sans-serif;color:#fff;margin-bottom:2px;font-weight:700">7LMK 293</div>
+              <div style="font-size:10px;color:#666;margin-bottom:12px">Black Tesla Model S</div>
+              <div class="confirm-box">
+                <div style="font-size:8px;color:#777;letter-spacing:2px;margin-bottom:5px">CONFIRMATION #</div>
+                <div id="cust-code" class="confirm-num"></div>
+              </div>
+              <div style="border-top:1px dashed #2a2a2a;padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><div style="font-size:8px;color:#444;letter-spacing:1px">VENUE</div><div style="font-size:10px;color:#bbb;margin-top:3px">Rosewood Hotel</div></div>
+                <div><div style="font-size:8px;color:#444;letter-spacing:1px">ARRIVED</div><div style="font-size:10px;color:#bbb;margin-top:3px">9:41 PM</div></div>
+              </div>
+            </div>
+            <div id="cust-getcar">
+              <button class="btn-accent" style="border-radius:12px;font-size:10px" onclick="requestCar()">🚗 GET MY CAR</button>
+            </div>
+            <div id="cust-onway" class="hidden">
+              <div style="background:#1a2a0a;border:1px solid #C8F04B33;border-radius:12px;padding:12px;margin-bottom:8px;text-align:center">
+                <div style="font-size:11px;color:#C8F04B">🚘 On its way</div>
+                <div style="font-size:9px;color:#666;margin-top:4px">Est. 3 minutes</div>
+              </div>
+              <div style="font-size:9px;color:#555;text-align:center;margin-bottom:8px;letter-spacing:1px">TIP YOUR VALET</div>
+              <div class="tip-row">
+                <button class="tip-btn" onclick="sendTip(2)">$2</button>
+                <button class="tip-btn" onclick="sendTip(5)">$5</button>
+                <button class="tip-btn" onclick="sendTip(10)">$10</button>
+              </div>
+            </div>
+            <div id="cust-tipped" class="hidden" style="text-align:center;background:#1a2a0a;border:1px solid #C8F04B33;border-radius:12px;padding:14px">
+              <div style="font-size:20px">🎉</div>
+              <div id="tip-msg" style="font-size:10px;color:#C8F04B;margin-top:6px"></div>
+              <div style="font-size:9px;color:#555;margin-top:4px">Have a great night.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="reset-btn" class="hidden" style="text-align:center;margin-top:24px">
+    <button class="btn-outline" onclick="resetDemo()">↺ Reset Demo</button>
+  </div>
+</div>
+
+<script>
+const valetSteps=[
+  {icon:"🚗",label:"Car Arrives",detail:"Customer pulls up. Valet opens app — already on standby."},
+  {icon:"📲",label:"Tap to Send Ticket",detail:"Valet taps their phone to customer's phone. NFC fires a unique ticket link instantly."},
+  {icon:"📸",label:"Photo + Park",detail:"App auto-prompts valet to snap a photo. Car is logged with spot, time, and plate."},
+  {icon:"🔔",label:"Retrieval Alert",detail:"Customer requests car. Valet gets a push: spot number, car photo, ETA countdown."},
+  {icon:"✅",label:"Confirm & Tip",detail:"Valet confirms handoff. Customer tips digitally. Done."}
+];
+const custSteps=[
+  {icon:"📳",label:"Receive Tap",detail:"Phone vibrates. A link appears — no app download needed."},
+  {icon:"🎟️",label:"Ticket Opens",detail:"Browser opens a sleek ticket page: car details, venue name, valet photo."},
+  {icon:"🍽️",label:"Enjoy the Night",detail:"Ticket lives in their browser. No paper. No pocket digging."},
+  {icon:"👆",label:"Request Car",detail:'One tap: "Get My Car". They pick a time or request now.'},
+  {icon:"🚘",label:"Car is Ready",detail:"Live status update. Car pulls up. Tap to tip. Walk out."}
+];
+let activeRole="valet",activeStep=0;
+function genCode(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";const r=n=>Array.from({length:n},()=>c[Math.floor(Math.random()*c.length)]).join("");return`VLT-${r(3)}-${r(3)}`;}
+const code=genCode();
+document.getElementById("valet-code").textContent=code;
+document.getElementById("cust-code").textContent=code;
+function renderSteps(){
+  const steps=activeRole==="valet"?valetSteps:custSteps;
+  document.getElementById("steps").innerHTML=steps.map((s,i)=>`
+    <div class="step${i===activeStep?" active":""}" onclick="setStep(${i})">
+      <div class="step-icon">${s.icon}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <span class="step-num">${String(i+1).padStart(2,"0")}</span>
+          <span class="step-label">${s.label}</span>
+        </div>
+        ${i===activeStep?`<p class="step-detail">${s.detail}</p>`:""}
+      </div>
+      ${i===activeStep?'<div class="dot"></div>':""}
+    </div>`).join("");
+}
+function setStep(i){activeStep=i;renderSteps();}
+function showRole(r){
+  activeRole=r;activeStep=0;
+  document.querySelectorAll(".role-btn").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  renderSteps();
+}
+function showTab(t){
+  document.getElementById("flow").classList.add("hidden");
+  document.getElementById("proto").classList.add("hidden");
+  document.getElementById(t).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+}
+function doTap(){
+  document.getElementById("valet-idle").classList.add("hidden");
+  document.getElementById("valet-tapping").classList.remove("hidden");
+  setTimeout(()=>{
+    document.getElementById("valet-tapping").classList.add("hidden");
+    document.getElementById("valet-sent").classList.remove("hidden");
+    document.getElementById("valet-waiting").classList.remove("hidden");
+    document.getElementById("cust-waiting").style.display="none";
+    document.getElementById("cust-ticket").classList.remove("hidden");
+    document.getElementById("reset-btn").classList.remove("hidden");
+  },1400);
+}
+function requestCar(){
+  document.getElementById("cust-getcar").classList.add("hidden");
+  document.getElementById("cust-onway").classList.remove("hidden");
+  document.getElementById("valet-waiting").classList.add("hidden");
+  document.getElementById("valet-alert").classList.remove("hidden");
+}
+function sendTip(amt){
+  document.getElementById("cust-onway").classList.add("hidden");
+  document.getElementById("cust-tipped").classList.remove("hidden");
+  document.getElementById("tip-msg").textContent=`$${amt} sent! Thanks!`;
+}
+function resetDemo(){
+  location.reload();
+}
+renderSteps();
+</script>
+</body>
+</html>
