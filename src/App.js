@@ -512,7 +512,8 @@ if (pinInput === MANAGER_PIN) {
   };
 
   // -- Auth gate: ABSOLUTE FIRST returns ----------------------
-  if (authUser === undefined) {
+   if (window.location.pathname === "/ticket") { window.location.replace(window.location.href.replace("/ticket", "/ticket.html")); return null; }
+   if (authUser === undefined) {
     return (
       <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ color: "#444", fontSize: "10px", letterSpacing: "2px", fontFamily: "'DM Mono', monospace" }}>LOADING...</div>
