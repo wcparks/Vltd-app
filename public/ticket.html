@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VLTD · Your Ticket</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:100vh;padding:24px 20px;overflow-x:hidden}
+.logo{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:900;color:#C8F04B;margin-bottom:2px}
+.logo-sub{font-size:8px;color:#555;letter-spacing:2px;margin-bottom:24px}
+.ticket{background:linear-gradient(135deg,#1a1a1a,#111);border:1px solid #C8F04B33;border-radius:20px;padding:20px;margin-bottom:16px}
+.ticket-label{font-size:8px;color:#C8F04B;letter-spacing:2px;margin-bottom:12px}
+.plate{font-size:28px;font-family:'Unbounded',sans-serif;color:#fff;font-weight:900;margin-bottom:4px}
+.car-desc{font-size:11px;color:#666;margin-bottom:16px}
+.confirm-box{background:#C8F04B15;border:1px solid #C8F04B44;border-radius:12px;padding:12px;text-align:center;margin-bottom:16px}
+.confirm-label{font-size:8px;color:#777;letter-spacing:2px;margin-bottom:6px}
+.confirm-num{font-size:22px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700;letter-spacing:3px}
+.divider{border-top:1px dashed #2a2a2a;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0}
+.info-label{font-size:7px;color:#444;letter-spacing:1px;margin-bottom:3px}
+.info-val{font-size:10px;color:#bbb}
+.name-section{background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:16px;margin-bottom:16px}
+.name-label{font-size:8px;color:#555;letter-spacing:2px;margin-bottom:10px}
+.name-input{width:100%;background:#0D0D0D;border:1px solid #2a2a2a;border-radius:10px;padding:12px;color:#fff;font-family:'DM Mono',monospace;font-size:13px;outline:none;margin-bottom:10px}
+.name-input:focus{border-color:#C8F04B44}
+.name-input::placeholder{color:#444}
+.btn-save{background:#C8F04B;color:#000;border:none;border-radius:10px;padding:11px;width:100%;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer}
+.btn-getcar{background:#C8F04B;color:#000;border:none;border-radius:14px;padding:14px;width:100%;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px}
+.btn-outline{background:transparent;border:1px solid #2a2a2a;border-radius:14px;padding:14px;width:100%;font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:1px;cursor:pointer;margin-bottom:16px}
+.status-box{background:#1a2a0a;border:1px solid #C8F04B33;border-radius:14px;padding:16px;text-align:center;margin-bottom:10px}
+.tip-title{font-size:8px;color:#555;letter-spacing:2px;text-align:center;margin-bottom:10px}
+.tip-row{display:flex;gap:8px;margin-bottom:16px}
+.tip-btn{flex:1;background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:14px 0;color:#bbb;font-family:'DM Mono',monospace;font-size:14px;cursor:pointer}
+.tip-btn.selected{background:#C8F04B22;border-color:#C8F04B;color:#C8F04B}
+.success{text-align:center;padding:24px;background:#1a2a0a;border:1px solid #C8F04B33;border-radius:16px}
+.hidden{display:none!important}
+.loading{text-align:center;padding:40px;color:#444;font-size:11px;letter-spacing:2px}
+.error{text-align:center;padding:40px;color:#ff4444;font-size:11px}
+</style>
+</head>
+<body>
+<div class="logo">VLTD</div>
+<div class="logo-sub">VALET · REDEFINED</div>
+
+<div id="loading" class="loading">LOADING YOUR TICKET...</div>
+<div id="error" class="error hidden">Ticket not found. Please check your QR code.</div>
+
+<div id="main" class="hidden">
+  <div class="ticket">
+    <div class="ticket-label">VALET TICKET</div>
+    <div class="plate" id="plate">--</div>
+    <div class="car-desc" id="car-desc">--</div>
+    <div class="confirm-box">
+      <div class="confirm-label">CONFIRMATION #</div>
+      <div class="confirm-num" id="code"></div>
+    </div>
+    <div class="divider">
+      <div><div class="info-label">VENUE</div><div class="info-val" id="venue">--</div></div>
+      <div><div class="info-label">ARRIVED</div><div class="info-val" id="arrived">--</div></div>
+      <div style="margin-top:10px"><div class="info-label">VALET</div><div class="info-val" id="valet-name">--</div></div>
+      <div style="margin-top:10px"><div class="info-label">STATUS</div><div class="info-val" id="status">--</div></div>
+    </div>
+  </div>
+
+  <div class="name-section" id="name-section">
+    <div class="name-label">ADD YOUR NAME (OPTIONAL)</div>
+    <input class="name-input" id="name-input" type="text" placeholder="Your name..." maxlength="30">
+    <button class="btn-save" onclick="saveName()">SAVE NAME</button>
+    <div style="font-size:10px;color:#C8F04B;margin-top:6px;display:none" id="name-saved">✓ Name saved!</div>
+  </div>
+
+  <div id="getcar-section">
+    <button class="btn-getcar" onclick="requestCar()">🚗 GET MY CAR</button>
+  </div>
+
+  <div id="onway-section" class="hidden">
+    <div class="status-box">
+      <div style="font-size:24px;margin-bottom:8px">🚘</div>
+      <div style="font-size:13px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700">On its way!</div>
+      <div style="font-size:10px;color:#666;margin-top:6px">Your valet is bringing your car now</div>
+    </div>
+    <div class="tip-title">TIP YOUR VALET</div>
+    <div class="tip-row">
+      <button class="tip-btn" onclick="selectTip(this,2)">$2</button>
+      <button class="tip-btn" onclick="selectTip(this,5)">$5</button>
+      <button class="tip-btn" onclick="selectTip(this,10)">$10</button>
+      <button class="tip-btn" onclick="selectTip(this,20)">$20</button>
+    </div>
+    <button class="btn-getcar" id="tip-confirm" onclick="sendTip()" style="display:none">SEND TIP</button>
+  </div>
+
+  <div id="success-section" class="hidden">
+    <div class="success">
+      <div style="font-size:36px;margin-bottom:12px">🎉</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:#C8F04B;margin-bottom:6px">Thank you!</div>
+      <div id="tip-sent-msg" style="font-size:11px;color:#777;margin-bottom:4px"></div>
+      <div style="font-size:10px;color:#555">Have a great night.</div>
+    </div>
+  </div>
+</div>
+
+<div style="height:40px"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCoLb5irRmwJIyBVxC2T46saECG5ZXKXJU",
+  authDomain: "wc-valet-app.firebaseapp.com",
+  projectId: "wc-valet-app",
+  storageBucket: "wc-valet-app.firebasestorage.app",
+  messagingSenderId: "425991585304",
+  appId: "1:425991585304:web:83a95246daa77b2e5a0d6d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+
+let ticketDocId = null;
+let ticketData = null;
+let selectedTip = 0;
+
+if (!code) {
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("error").classList.remove("hidden");
+} else {
+  loadTicket(code);
+}
+
+async function loadTicket(code) {
+  try {
+    const q = query(collection(db, "tickets"), where("confirmCode", "==", code));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      document.getElementById("loading").classList.add("hidden");
+      document.getElementById("error").classList.remove("hidden");
+      return;
+    }
+
+    const docSnap = snap.docs[0];
+    ticketDocId = docSnap.id;
+    ticketData = docSnap.data();
+
+    document.getElementById("plate").textContent = ticketData.plate || "--";
+    document.getElementById("car-desc").textContent = [ticketData.color, ticketData.car].filter(Boolean).join(" ") || "--";
+    document.getElementById("code").textContent = code;
+    document.getElementById("venue").textContent = ticketData.eventName || "Valet";
+    document.getElementById("valet-name").textContent = ticketData.parkedBy || ticketData.createdBy || "--";
+    document.getElementById("status").textContent = (ticketData.status || "--").toUpperCase();
+
+    if (ticketData.time?.toDate) {
+      document.getElementById("arrived").textContent = ticketData.time.toDate().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    }
+
+    if (ticketData.customerName) {
+      document.getElementById("name-section").style.display = "none";
+    }
+
+    if (ticketData.status === "retrieving" || ticketData.status === "delivered") {
+      document.getElementById("getcar-section").classList.add("hidden");
+      document.getElementById("onway-section").classList.remove("hidden");
+    }
+
+    document.getElementById("loading").classList.add("hidden");
+    document.getElementById("main").classList.remove("hidden");
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById("loading").classList.add("hidden");
+    document.getElementById("error").classList.remove("hidden");
+  }
+}
+
+window.saveName = async function() {
+  const name = document.getElementById("name-input").value.trim();
+  if (!name || !ticketDocId) return;
+  await updateDoc(doc(db, "tickets", ticketDocId), { customerName: name });
+  document.getElementById("name-saved").style.display = "block";
+  document.getElementById("name-saved").textContent = "✓ Name saved!";
+}
+
+window.requestCar = async function() {
+  if (!ticketDocId) return;
+  await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
+  document.getElementById("getcar-section").classList.add("hidden");
+  document.getElementById("onway-section").classList.remove("hidden");
+}
+
+window.selectTip = function(btn, amt) {
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedTip = amt;
+  document.getElementById("tip-confirm").style.display = "block";
+  document.getElementById("tip-confirm").textContent = `SEND $${amt} TIP`;
+}
+
+window.sendTip = async function() {
+  if (!ticketDocId) return;
+  await updateDoc(doc(db, "tickets", ticketDocId), { tip: selectedTip });
+  document.getElementById("onway-section").classList.add("hidden");
+  document.getElementById("success-section").classList.remove("hidden");
+  document.getElementById("tip-sent-msg").textContent = `$${selectedTip} tip sent. Thank you!`;
+}
+</script>
+</body>
+</html>
