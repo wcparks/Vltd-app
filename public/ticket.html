@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -17,7 +18,7 @@ body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:10
 .confirm-box{background:#C8F04B15;border:1px solid #C8F04B44;border-radius:12px;padding:12px;text-align:center;margin-bottom:16px}
 .confirm-label{font-size:8px;color:#777;letter-spacing:2px;margin-bottom:6px}
 .confirm-num{font-size:22px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700;letter-spacing:3px}
-.divider{border-top:1px dashed #2a2a2a;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0}
+.divider{border-top:1px dashed #2a2a2a;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .info-label{font-size:7px;color:#444;letter-spacing:1px;margin-bottom:3px}
 .info-val{font-size:10px;color:#bbb}
 .name-section{background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:16px;margin-bottom:16px}
@@ -27,17 +28,52 @@ body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:10
 .name-input::placeholder{color:#444}
 .btn-save{background:#C8F04B;color:#000;border:none;border-radius:10px;padding:11px;width:100%;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer}
 .btn-getcar{background:#C8F04B;color:#000;border:none;border-radius:14px;padding:14px;width:100%;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px}
-.btn-outline{background:transparent;border:1px solid #2a2a2a;border-radius:14px;padding:14px;width:100%;font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:1px;cursor:pointer;margin-bottom:16px}
-.status-box{background:#1a2a0a;border:1px solid #C8F04B33;border-radius:14px;padding:16px;text-align:center;margin-bottom:10px}
-.tip-title{font-size:8px;color:#555;letter-spacing:2px;text-align:center;margin-bottom:10px}
-.tip-row{display:flex;gap:8px;margin-bottom:16px}
-.tip-btn{flex:1;background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:14px 0;color:#bbb;font-family:'DM Mono',monospace;font-size:14px;cursor:pointer}
+.status-box{background:#1a2a0a;border:1px solid #C8F04B33;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px}
+.section-card{background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:16px;margin-bottom:16px}
+.section-title{font-size:8px;color:#555;letter-spacing:2px;margin-bottom:14px;text-align:center}
+
+/* Tip presets */
+.tip-row{display:flex;gap:8px;margin-bottom:12px}
+.tip-btn{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:12px 0;color:#bbb;font-family:‘DM Mono’,monospace;font-size:13px;cursor:pointer;transition:all .15s}
 .tip-btn.selected{background:#C8F04B22;border-color:#C8F04B;color:#C8F04B}
+
+/* Custom amount */
+.custom-wrap{position:relative;margin-bottom:14px}
+.custom-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#555;font-size:15px;pointer-events:none}
+.custom-input{width:100%;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:12px 12px 12px 28px;color:#fff;font-family:‘DM Mono’,monospace;font-size:15px;outline:none;-moz-appearance:textfield}
+.custom-input::-webkit-outer-spin-button,
+.custom-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.custom-input:focus{border-color:#C8F04B66}
+.custom-input::placeholder{color:#333}
+
+/* Pay buttons */
+.pay-row{display:flex;gap:10px}
+.pay-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border-radius:12px;border:none;font-family:‘Unbounded’,sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-decoration:none;transition:opacity .15s;-webkit-tap-highlight-color:transparent}
+.pay-btn:active{opacity:.75}
+.pay-cashapp{background:#00D632;color:#000}
+.pay-venmo{background:#008CFF;color:#fff}
+.pay-icon{font-size:16px;font-weight:900;line-height:1}
+.pay-disabled{opacity:.25;pointer-events:none}
+
+/* Stars */
+.stars-row{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.star{font-size:32px;cursor:pointer;color:#C8F04B;opacity:.2;transition:opacity .12s,transform .12s;user-select:none;-webkit-user-select:none}
+.star.lit{opacity:1;transform:scale(1.1)}
+
+/* Review */
+.review-input{width:100%;background:#0D0D0D;border:1px solid #2a2a2a;border-radius:10px;padding:12px;color:#fff;font-family:‘DM Mono’,monospace;font-size:12px;outline:none;resize:none;height:76px;margin-bottom:10px;line-height:1.5}
+.review-input:focus{border-color:#C8F04B44}
+.review-input::placeholder{color:#333}
+.btn-review{background:transparent;border:1px solid #C8F04B55;border-radius:10px;padding:11px;width:100%;font-family:‘Unbounded’,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;color:#C8F04B;transition:background .15s}
+.btn-review:hover{background:#C8F04B15}
+.btn-review:disabled{opacity:.35;cursor:default}
+
 .success{text-align:center;padding:24px;background:#1a2a0a;border:1px solid #C8F04B33;border-radius:16px}
 .hidden{display:none!important}
 .loading{text-align:center;padding:40px;color:#444;font-size:11px;letter-spacing:2px}
 .error{text-align:center;padding:40px;color:#ff4444;font-size:11px}
 </style>
+
 </head>
 <body>
 <div class="logo">VLTD</div>
@@ -47,6 +83,9 @@ body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:10
 <div id="error" class="error hidden">Ticket not found. Please check your QR code.</div>
 
 <div id="main" class="hidden">
+
+  <!-- Ticket card -->
+
   <div class="ticket">
     <div class="ticket-label">VALET TICKET</div>
     <div class="plate" id="plate">--</div>
@@ -63,6 +102,8 @@ body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:10
     </div>
   </div>
 
+  <!-- Optional name -->
+
   <div class="name-section" id="name-section">
     <div class="name-label">ADD YOUR NAME (OPTIONAL)</div>
     <input class="name-input" id="name-input" type="text" placeholder="Your name..." maxlength="30">
@@ -70,41 +111,84 @@ body{background:#0D0D0D;color:#fff;font-family:'DM Mono',monospace;min-height:10
     <div style="font-size:10px;color:#C8F04B;margin-top:6px;display:none" id="name-saved">✓ Name saved!</div>
   </div>
 
+  <!-- Request car -->
+
   <div id="getcar-section">
-    <button class="btn-getcar" id="getcar-btn">🚗 GET MY CAR</button>
+    <button class="btn-getcar" id="getcar-btn" onclick="requestCar()">🚗 GET MY CAR</button>
   </div>
+
+  <!-- On its way -->
 
   <div id="onway-section" class="hidden">
-    <div class="status-box">
-      <div style="font-size:24px;margin-bottom:8px">🚘</div>
-      <div style="font-size:13px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700">On its way!</div>
-      <div style="font-size:10px;color:#666;margin-top:6px">Your valet is bringing your car now</div>
-    </div>
-    <div class="tip-title">TIP YOUR VALET</div>
-    <div class="tip-row">
-      <button class="tip-btn" onclick="selectTip(this,2)">$2</button>
-      <button class="tip-btn" onclick="selectTip(this,5)">$5</button>
-      <button class="tip-btn" onclick="selectTip(this,10)">$10</button>
-      <button class="tip-btn" onclick="selectTip(this,20)">$20</button>
-    </div>
-    <button class="btn-getcar" id="tip-confirm" onclick="sendTip()" style="display:none">SEND TIP</button>
+
+```
+<div class="status-box">
+  <div style="font-size:24px;margin-bottom:8px">🚘</div>
+  <div style="font-size:13px;color:#C8F04B;font-family:'Unbounded',sans-serif;font-weight:700">On its way!</div>
+  <div style="font-size:10px;color:#666;margin-top:6px">Your valet is bringing your car now</div>
+</div>
+
+<!-- Tip card -->
+<div class="section-card">
+  <div class="section-title">TIP YOUR VALET</div>
+
+  <!-- Preset amounts -->
+  <div class="tip-row">
+    <button class="tip-btn" onclick="selectTip(this, 2)">$2</button>
+    <button class="tip-btn" onclick="selectTip(this, 5)">$5</button>
+    <button class="tip-btn" onclick="selectTip(this, 10)">$10</button>
+    <button class="tip-btn" onclick="selectTip(this, 20)">$20</button>
   </div>
 
-  <div id="success-section" class="hidden">
-    <div class="success">
-      <div style="font-size:36px;margin-bottom:12px">🎉</div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:14px;color:#C8F04B;margin-bottom:6px">Thank you!</div>
-      <div id="tip-sent-msg" style="font-size:11px;color:#777;margin-bottom:4px"></div>
-      <div style="font-size:10px;color:#555">Have a great night.</div>
-    </div>
+  <!-- Custom amount -->
+  <div class="custom-wrap">
+    <span class="custom-prefix">$</span>
+    <input
+      class="custom-input"
+      id="custom-tip"
+      type="number"
+      min="1"
+      max="999"
+      placeholder="Custom amount"
+      oninput="onCustomTip(this)"
+    >
+  </div>
+
+  <!-- Pay buttons -->
+  <div class="pay-row">
+    <a id="cashapp-btn" class="pay-btn pay-cashapp pay-disabled" href="#" target="_blank" rel="noopener noreferrer">
+      <span class="pay-icon">$</span>CASHAPP
+    </a>
+    <a id="venmo-btn" class="pay-btn pay-venmo pay-disabled" href="#" target="_blank" rel="noopener noreferrer">
+      <span class="pay-icon">V</span>VENMO
+    </a>
   </div>
 </div>
 
+<!-- Review card -->
+<div class="section-card">
+  <div class="section-title">RATE YOUR EXPERIENCE</div>
+  <div class="stars-row">
+    <span class="star" onclick="rateStar(1)">★</span>
+    <span class="star" onclick="rateStar(2)">★</span>
+    <span class="star" onclick="rateStar(3)">★</span>
+    <span class="star" onclick="rateStar(4)">★</span>
+    <span class="star" onclick="rateStar(5)">★</span>
+  </div>
+  <textarea class="review-input" id="review-text" placeholder="Leave a comment (optional)..."></textarea>
+  <button class="btn-review" id="review-btn" onclick="submitReview()" disabled>SUBMIT REVIEW</button>
+  <div style="font-size:10px;color:#C8F04B;margin-top:8px;display:none;text-align:center" id="review-saved">✓ Thanks for the feedback!</div>
+</div>
+```
+
+  </div>
+</div>
 <div style="height:40px"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCoLb5irRmwJIyBVxC2T46saECG5ZXKXJU",
@@ -116,138 +200,186 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
+
+// ── Payment handles ───────────────────────────────────────────────────
+const CASHAPP_HANDLE = "mederos";   // opens cash.app/$mederos
+const VENMO_HANDLE   = "mimzy212"; // opens venmo.com/mimzy212
 
 const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
+const code   = params.get("code");
 
-let ticketDocId = null;
-let ticketData = null;
-let selectedTip = 0;
+let ticketDocId  = null;
+let ticketData   = null;
+let selectedTip  = 0;
+let selectedStar = 0;
 
-if (!code) {
+function showError() {
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("error").classList.remove("hidden");
-} else {
-  loadTicket(code);
 }
+function showMain() {
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("main").classList.remove("hidden");
+}
+
+if (!code) { showError(); } else { loadTicket(code); }
 
 async function loadTicket(code) {
   try {
-    const q = query(collection(db, "tickets"), where("confirmCode", "==", code));
+    const q    = query(collection(db, "tickets"), where("confirmCode", "==", code));
     const snap = await getDocs(q);
-    
-    alert("Tickets found: " + snap.size + " for code: " + code);
-    if (snap.empty) {
-      document.getElementById("loading").classList.add("hidden");
-      document.getElementById("error").classList.remove("hidden");
-      return;
-    }
+    if (snap.empty) { showError(); return; }
 
     const docSnap = snap.docs[0];
-    ticketDocId = docSnap.id;
-    ticketData = docSnap.data();
+    ticketDocId   = docSnap.id;
+    ticketData    = docSnap.data();
 
-    document.getElementById("plate").textContent = ticketData.plate || "--";
-    document.getElementById("car-desc").textContent = [ticketData.color, ticketData.car].filter(Boolean).join(" ") || "--";
-    document.getElementById("ticketNum").textContent = "#" + (ticketData.ticketNum || code);
-    document.getElementById("venue").textContent = ticketData.eventName || "Valet";
+    document.getElementById("plate").textContent      = ticketData.plate || "--";
+    document.getElementById("car-desc").textContent   = [ticketData.color, ticketData.car].filter(Boolean).join(" ") || "--";
+    document.getElementById("ticketNum").textContent  = "#" + (ticketData.ticketNum || code);
+    document.getElementById("venue").textContent      = ticketData.eventName || "Valet";
     document.getElementById("valet-name").textContent = ticketData.parkedBy || ticketData.createdBy || "--";
-    document.getElementById("status").textContent = (ticketData.status || "--").toUpperCase();
+    document.getElementById("status").textContent     = (ticketData.status || "--").toUpperCase();
 
     if (ticketData.time?.toDate) {
-      document.getElementById("arrived").textContent = ticketData.time.toDate().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      document.getElementById("arrived").textContent =
+        ticketData.time.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
 
     if (ticketData.customerName) {
-      document.getElementById("name-section").style.display = "none";
+      document.getElementById("name-section").classList.add("hidden");
     }
 
-    if (ticketData.status === "retrieving" || ticketData.status === "delivered") {
+    const s = ticketData.status;
+    if (s === "retrieving" || s === "delivered") {
       document.getElementById("getcar-section").classList.add("hidden");
       document.getElementById("onway-section").classList.remove("hidden");
     }
 
-    document.getElementById("loading").classList.add("hidden");
-    document.getElementById("main").classList.remove("hidden");
-    document.getElementById("getcar-btn").addEventListener("click", async function() {
-  if (!ticketDocId) return;
-  await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
-  try {
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "car_requested",
-        channel: "whatsapp",
-        phone: ticketData?.customerPhone || "",
-        ticketNum: ticketData?.ticketNum,
-        car: ticketData?.car,
-        color: ticketData?.color,
-        spot: ticketData?.spot,
-        customerName: ticketData?.customerName,
-        eventId: ticketData?.eventId || null,
-      }),
-    });
-  } catch(e) {}
-  document.getElementById("getcar-section").classList.add("hidden");
-  document.getElementById("onway-section").classList.remove("hidden");
-});
-
-  } catch(e) {
+    showMain();
+  } catch (e) {
     console.error(e);
-    document.getElementById("loading").classList.add("hidden");
-    document.getElementById("error").classList.remove("hidden");
+    showError();
   }
 }
 
-window.saveName = async function() {
+// ── Helpers ───────────────────────────────────────────────────────────
+function updatePayLinks(amt) {
+  const note  = encodeURIComponent("VLTD Valet Tip");
+  const caBtn = document.getElementById("cashapp-btn");
+  const vnBtn = document.getElementById("venmo-btn");
+
+  if (!amt || amt <= 0) {
+    caBtn.classList.add("pay-disabled");
+    vnBtn.classList.add("pay-disabled");
+    return;
+  }
+
+  // CashApp: cash.app/$handle/amount  → opens app pre-filled, customer taps Pay
+  caBtn.href = `https://cash.app/$${CASHAPP_HANDLE}/${amt}`;
+  // Venmo: venmo.com/handle?txn=pay&amount=X&note=Y
+  vnBtn.href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${amt}&note=${note}`;
+
+  caBtn.classList.remove("pay-disabled");
+  vnBtn.classList.remove("pay-disabled");
+
+  // Log to Firestore (non-blocking)
+  if (ticketDocId) {
+    updateDoc(doc(db, "tickets", ticketDocId), { tipAmountSelected: amt }).catch(() => {});
+  }
+}
+
+// ── Preset tip buttons ────────────────────────────────────────────────
+window.selectTip = function (btn, amt) {
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  document.getElementById("custom-tip").value = ""; // clear custom field
+  selectedTip = amt;
+  updatePayLinks(amt);
+};
+
+// ── Custom tip input ──────────────────────────────────────────────────
+window.onCustomTip = function (input) {
+  const amt = parseFloat(input.value);
+  // Deselect presets when typing custom
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("selected"));
+  selectedTip = (!isNaN(amt) && amt > 0) ? amt : 0;
+  updatePayLinks(selectedTip);
+};
+
+// ── Save name ─────────────────────────────────────────────────────────
+window.saveName = async function () {
   const name = document.getElementById("name-input").value.trim();
   if (!name || !ticketDocId) return;
   await updateDoc(doc(db, "tickets", ticketDocId), { customerName: name });
-  document.getElementById("name-saved").style.display = "block";
-  document.getElementById("name-saved").textContent = "✓ Name saved!";
-}
+  const el = document.getElementById("name-saved");
+  el.textContent = "✓ Name saved!";
+  el.style.display = "block";
+};
 
-window.requestCar = async function() {
+// ── Request car ───────────────────────────────────────────────────────
+window.requestCar = async function () {
   if (!ticketDocId) return;
-  await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
+  const btn = document.getElementById("getcar-btn");
+  btn.disabled    = true;
+  btn.textContent = "REQUESTING...";
   try {
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "car_requested",
-        channel: "whatsapp",
-        phone: ticketData?.customerPhone || "",
-        ticketNum: ticketData?.ticketNum,
-        car: ticketData?.car,
-        color: ticketData?.color,
-        spot: ticketData?.spot,
-        customerName: ticketData?.customerName,
-        eventId: ticketData?.eventId || null,
-      }),
-    });
-  } catch(e) {}
+    await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
+  } catch (e) {
+    console.error(e);
+    btn.disabled    = false;
+    btn.textContent = "🚗 GET MY CAR";
+    return;
+  }
+  fetch("/api/notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type:         "car_requested",
+      channel:      "whatsapp",
+      phone:        ticketData?.customerPhone || "",
+      ticketNum:    ticketData?.ticketNum,
+      car:          ticketData?.car,
+      color:        ticketData?.color,
+      spot:         ticketData?.spot,
+      customerName: ticketData?.customerName,
+      eventId:      ticketData?.eventId || null,
+    }),
+  }).catch(() => {});
   document.getElementById("getcar-section").classList.add("hidden");
   document.getElementById("onway-section").classList.remove("hidden");
-}
+};
 
-window.selectTip = function(btn, amt) {
-  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("selected"));
-  btn.classList.add("selected");
-  selectedTip = amt;
-  document.getElementById("tip-confirm").style.display = "block";
-  document.getElementById("tip-confirm").textContent = `SEND $${amt} TIP`;
-}
+// ── Star rating ───────────────────────────────────────────────────────
+window.rateStar = function (n) {
+  selectedStar = n;
+  document.querySelectorAll(".star").forEach((s, i) => s.classList.toggle("lit", i < n));
+  document.getElementById("review-btn").disabled = false;
+};
 
-window.sendTip = async function() {
-  if (!ticketDocId) return;
-  await updateDoc(doc(db, "tickets", ticketDocId), { tip: selectedTip });
-  document.getElementById("onway-section").classList.add("hidden");
-  document.getElementById("success-section").classList.remove("hidden");
-  document.getElementById("tip-sent-msg").textContent = `$${selectedTip} tip sent. Thank you!`;
-}
+// ── Submit review ─────────────────────────────────────────────────────
+window.submitReview = async function () {
+  if (!ticketDocId || !selectedStar) return;
+  const reviewText = document.getElementById("review-text").value.trim();
+  const btn        = document.getElementById("review-btn");
+  btn.disabled    = true;
+  btn.textContent = "SAVING...";
+  try {
+    await updateDoc(doc(db, "tickets", ticketDocId), {
+      rating:     selectedStar,
+      reviewText: reviewText || "",
+      reviewedAt: new Date(),
+    });
+    document.getElementById("review-saved").style.display = "block";
+    btn.textContent = "✓ SUBMITTED";
+  } catch (e) {
+    console.error(e);
+    btn.disabled    = false;
+    btn.textContent = "SUBMIT REVIEW";
+  }
+};
 </script>
+
 </body>
 </html>
