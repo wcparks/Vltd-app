@@ -1,10 +1,10 @@
 // ============================================================
 // CashierView.jsx – Cashier role: tips, delivered tickets,
 //                    receipts, manual ticket entry with
-//                    "retrieved by" valet selector
+//                    “retrieved by” valet selector
 // ============================================================
-import { useState, useEffect, useRef } from 'react';
-import { db } from '../config/firebase';
+import { useState, useEffect, useRef } from ‘react’;
+import { db } from ‘../config/firebase’;
 import {
 collection, query, where, onSnapshot,
 updateDoc, addDoc, doc, getDocs, serverTimestamp
