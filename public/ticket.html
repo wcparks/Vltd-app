@@ -149,7 +149,7 @@ async function loadTicket(code) {
 
     document.getElementById("plate").textContent = ticketData.plate || "--";
     document.getElementById("car-desc").textContent = [ticketData.color, ticketData.car].filter(Boolean).join(" ") || "--";
-    document.getElementById("code").textContent = code;
+    document.getElementById("ticketNum").textContent = "#" + (ticketData.ticketNum || code);
     document.getElementById("venue").textContent = ticketData.eventName || "Valet";
     document.getElementById("valet-name").textContent = ticketData.parkedBy || ticketData.createdBy || "--";
     document.getElementById("status").textContent = (ticketData.status || "--").toUpperCase();
