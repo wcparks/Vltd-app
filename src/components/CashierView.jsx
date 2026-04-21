@@ -15,9 +15,21 @@ const [tickets, setTickets]         = useState([]);
 const [selected, setSelected]       = useState(null);
 const [tipConfirmed, setTipConfirmed] = useState({});
 const [search, setSearch]           = useState(’’);
-const [activeTab, setActiveTab]     = useState(‘requests’); // ‘requests’ | ‘delivered’ | ‘manual’
+const [activeTab, setActiveTab]     = useState(‘requests’); // ‘requests’ | ‘delivered’ | ‘edit’ | ‘manual’
 const [activeStaff, setActiveStaff] = useState([]);        // valets on this event
+const editSearchTimer = useRef(null);
 const receiptRef = useRef(null);
+
+// ── Edit/search tab state ─────────────────────────────────
+const [editSearch, setEditSearch]       = useState(’’);
+const [editResults, setEditResults]     = useState([]);
+const [editTicket, setEditTicket]       = useState(null);  // ticket being edited
+const [editForm, setEditForm]           = useState({});
+const [editColorSel, setEditColorSel]   = useState(’’);
+const [editStatusSel, setEditStatusSel] = useState(’’);
+const [editSaving, setEditSaving]       = useState(false);
+const [editSuccess, setEditSuccess]     = useState(false);
+const editSearchTimer = useRef(null);
 
 // ── Manual ticket form state ──────────────────────────────
 const [mForm, setMForm] = useState({
@@ -126,6 +138,104 @@ alert(‘Error saving ticket. Please try again.’);
 setMSaving(false);
 }
 
+// ── Edit tab: search tickets ──────────────────────────────
+async function runEditSearch(val) {
+const raw = val.trim().toUpperCase();
+const rawLower = val.trim().toLowerCase();
+if (raw.length < 2) { setEditResults([]); return; }
+try {
+const results = [];
+const seen = new Set();
+const add = (d) => { if (!seen.has(d.id)) { seen.add(d.id); results.push({ id: d.id, …d.data() }); }};
+
+```
+  // Search by plate (exact)
+  const byPlate = await getDocs(query(collection(db, 'tickets'), where('plate', '==', raw)));
+  byPlate.forEach(add);
+
+  // Search by ticketNum
+  const byNum = await getDocs(query(collection(db, 'tickets'), where('ticketNum', '==', raw.replace(/^#/, ''))));
+  byNum.forEach(add);
+
+  // Search by ticketNumber (alternate field)
+  const byNumber = await getDocs(query(collection(db, 'tickets'), where('ticketNumber', '==', raw.replace(/^#/, ''))));
+  byNumber.forEach(add);
+
+  // Search by customerName (case-insensitive prefix via >= / <= trick)
+  const byName = await getDocs(query(
+    collection(db, 'tickets'),
+    where('customerName', '>=', val.trim()),
+    where('customerName', '<=', val.trim() + '\uf8ff')
+  ));
+  byName.forEach(add);
+
+  // Search by make
+  const byMake = await getDocs(query(
+    collection(db, 'tickets'),
+    where('make', '>=', val.trim()),
+    where('make', '<=', val.trim() + '\uf8ff')
+  ));
+  byMake.forEach(add);
+
+  // Search by spot (exact)
+  const bySpot = await getDocs(query(collection(db, 'tickets'), where('spot', '==', raw)));
+  bySpot.forEach(add);
+
+  // Client-side filter for color (too many values for Firestore query)
+  // Already covered by the getDocs above, just sort results
+  results.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
+  setEditResults(results.slice(0, 10)); // cap at 10
+} catch (e) { console.error('Search error:', e); }
+```
+
+}
+
+function onEditSearchChange(val) {
+setEditSearch(val);
+setEditTicket(null);
+clearTimeout(editSearchTimer.current);
+editSearchTimer.current = setTimeout(() => runEditSearch(val), 350);
+}
+
+function openEditTicket(ticket) {
+setEditTicket(ticket);
+setEditResults([]);
+setEditColorSel(ticket.color || ‘’);
+setEditStatusSel(ticket.status || ‘parked’);
+setEditForm({
+make: ticket.make || ticket.car || ‘’, model: ticket.model || ‘’,
+plate: ticket.plate || ‘’, spot: ticket.spot || ‘’,
+customerName: ticket.customerName || ‘’, customerPhone: ticket.customerPhone || ‘’,
+damageNotes: ticket.damageNotes || ‘’, notes: ticket.notes || ‘’,
+});
+setEditSuccess(false);
+}
+
+async function saveEditTicket() {
+if (!editTicket) return;
+setEditSaving(true);
+const updates = {
+make: editForm.make, car: editForm.make, model: editForm.model,
+color: editColorSel, plate: editForm.plate.toUpperCase(),
+spot: editForm.spot.toUpperCase(), customerName: editForm.customerName,
+customerPhone: editForm.customerPhone, damageNotes: editForm.damageNotes,
+notes: editForm.notes, status: editStatusSel,
+updatedAt: serverTimestamp(), updatedBy: staffName || ‘cashier’,
+};
+Object.keys(updates).forEach(k => { if (updates[k] === ‘’) delete updates[k]; });
+try {
+await updateDoc(doc(db, ‘tickets’, editTicket.id), updates);
+setEditSuccess(true);
+setEditTicket(null);
+setEditSearch(’’);
+setTimeout(() => setEditSuccess(false), 3000);
+} catch (e) {
+console.error(e);
+alert(‘Error saving. Please try again.’);
+}
+setEditSaving(false);
+}
+
 // ── Derived data ──────────────────────────────────────────
 const requesting = tickets.filter(t => t.status === ‘retrieving’);
 const delivered  = tickets.filter(t => t.status === ‘delivered’);
@@ -182,6 +292,7 @@ return (
     {[
       { key: 'requests',  label: `🔔 Requests${requesting.length ? ` (${requesting.length})` : ''}` },
       { key: 'delivered', label: '✅ Delivered' },
+      { key: 'edit',      label: '🔍 Edit Ticket' },
       { key: 'manual',    label: '📋 Manual Entry' },
     ].map(t => (
       <button
@@ -195,7 +306,7 @@ return (
   </div>
 
   {/* ── Search (requests + delivered tabs) ── */}
-  {activeTab !== 'manual' && (
+  {activeTab !== 'manual' && activeTab !== 'edit' && (
     <div style={s.searchWrap}>
       <input
         style={s.search}
@@ -207,7 +318,7 @@ return (
   )}
 
   {/* ── Requests / Delivered list ── */}
-  {activeTab !== 'manual' && (
+  {activeTab !== 'manual' && activeTab !== 'edit' && (
     <div style={s.list}>
       {filtered.map(ticket => {
         const paid = tipConfirmed[ticket.id] || ticket.tipPaid;
@@ -261,6 +372,149 @@ return (
         <div style={s.empty}>
           {activeTab === 'requests' ? 'No pending requests' : 'No delivered tickets yet'}
         </div>
+      )}
+    </div>
+  )}
+
+  {/* ── Edit Ticket tab ── */}
+  {activeTab === 'edit' && (
+    <div style={s.manualWrap}>
+      {editSuccess && (
+        <div style={s.successBanner}>✅ Ticket updated successfully!</div>
+      )}
+
+      {/* Search bar */}
+      {!editTicket && (
+        <>
+          <div style={{ ...s.fieldLabel, marginBottom: 6 }}>SEARCH TICKET</div>
+          <input
+            style={{ ...s.fieldInput, marginBottom: 4, fontSize: 15 }}
+            placeholder="Plate, ticket #, name, make, spot..."
+            value={editSearch}
+            onChange={e => onEditSearchChange(e.target.value)}
+            autoComplete="off"
+          />
+          <div style={{ fontSize: 10, color: '#aaa', marginBottom: 12, letterSpacing: 1 }}>
+            SEARCH BY: PLATE · TICKET # · CUSTOMER NAME · MAKE · SPOT
+          </div>
+
+          {/* Results */}
+          {editResults.map(t => {
+            const num = t.ticketNumber || t.ticketNum || t.id.slice(-4);
+            const car = [t.color, t.make || t.car, t.model].filter(Boolean).join(' ');
+            return (
+              <div key={t.id} style={s.editResultCard} onClick={() => openEditTicket(t)}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={s.ticketNum}>#{num}</span>
+                  <span style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase' }}>{t.status}</span>
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 15, margin: '3px 0 2px' }}>{t.plate || '--'}</div>
+                <div style={{ fontSize: 12, color: '#888' }}>{car || '--'} {t.customerName ? `· ${t.customerName}` : ''}</div>
+              </div>
+            );
+          })}
+          {editSearch.length >= 2 && editResults.length === 0 && (
+            <div style={s.empty}>No tickets found</div>
+          )}
+        </>
+      )}
+
+      {/* Edit form */}
+      {editTicket && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <button style={s.btnSecondary} onClick={() => { setEditTicket(null); setEditSearch(''); }}>
+              ← Back to search
+            </button>
+          </div>
+
+          <div style={s.formCard}>
+            <div style={s.formCardTitle}>
+              TICKET #{editTicket.ticketNumber || editTicket.ticketNum || editTicket.id.slice(-4).toUpperCase()}
+            </div>
+            <div style={s.fieldRow}>
+              <div style={s.fieldHalf}>
+                <div style={s.fieldLabel}>MAKE</div>
+                <input style={s.fieldInput} value={editForm.make}
+                  onChange={e => setEditForm(f => ({ ...f, make: e.target.value }))} />
+              </div>
+              <div style={s.fieldHalf}>
+                <div style={s.fieldLabel}>MODEL</div>
+                <input style={s.fieldInput} value={editForm.model}
+                  onChange={e => setEditForm(f => ({ ...f, model: e.target.value }))} />
+              </div>
+            </div>
+            <div style={s.fieldLabel}>COLOR</div>
+            <div style={s.colorChips}>
+              {COLORS.map(c => (
+                <span key={c}
+                  style={{ ...s.chip, ...(editColorSel === c ? s.chipSel : {}) }}
+                  onClick={() => setEditColorSel(c)}>{c}</span>
+              ))}
+            </div>
+            <div style={s.fieldRow}>
+              <div style={s.fieldHalf}>
+                <div style={s.fieldLabel}>PLATE</div>
+                <input style={s.fieldInput} value={editForm.plate}
+                  onChange={e => setEditForm(f => ({ ...f, plate: e.target.value.toUpperCase() }))} />
+              </div>
+              <div style={s.fieldHalf}>
+                <div style={s.fieldLabel}>SPOT</div>
+                <input style={s.fieldInput} value={editForm.spot}
+                  onChange={e => setEditForm(f => ({ ...f, spot: e.target.value.toUpperCase() }))} />
+              </div>
+            </div>
+          </div>
+
+          <div style={s.formCard}>
+            <div style={s.formCardTitle}>CUSTOMER</div>
+            <div style={s.fieldLabel}>NAME</div>
+            <input style={{ ...s.fieldInput, marginBottom: 10 }} value={editForm.customerName}
+              placeholder="Guest name..."
+              onChange={e => setEditForm(f => ({ ...f, customerName: e.target.value }))} />
+            <div style={s.fieldLabel}>PHONE</div>
+            <input style={s.fieldInput} type="tel" value={editForm.customerPhone}
+              placeholder="Phone..."
+              onChange={e => setEditForm(f => ({ ...f, customerPhone: e.target.value }))} />
+          </div>
+
+          <div style={s.formCard}>
+            <div style={s.formCardTitle}>STATUS</div>
+            <div style={s.colorChips}>
+              {['parked','retrieving','delivered'].map(st => (
+                <span key={st}
+                  style={{ ...s.chip, ...(editStatusSel === st ? s.chipSel : {}) }}
+                  onClick={() => setEditStatusSel(st)}>
+                  {st.toUpperCase()}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div style={s.formCard}>
+            <div style={s.formCardTitle}>NOTES</div>
+            <div style={s.fieldLabel}>DAMAGE</div>
+            <textarea style={{ ...s.fieldInput, ...s.textarea }} value={editForm.damageNotes}
+              placeholder="Pre-existing damage..."
+              onChange={e => setEditForm(f => ({ ...f, damageNotes: e.target.value }))} />
+            <div style={{ ...s.fieldLabel, marginTop: 10 }}>SPECIAL NOTES</div>
+            <textarea style={{ ...s.fieldInput, ...s.textarea }} value={editForm.notes}
+              placeholder="VIP, rush, instructions..."
+              onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} />
+          </div>
+
+          <button
+            style={{ ...s.btnPrimary, ...(editSaving ? s.btnDisabled : {}) }}
+            onClick={saveEditTicket}
+            disabled={editSaving}
+          >
+            {editSaving ? 'SAVING...' : 'SAVE CHANGES'}
+          </button>
+          <button style={s.btnSecondary} onClick={() => { setEditTicket(null); setEditSearch(''); }}>
+            CANCEL
+          </button>
+          <div style={{ height: 40 }} />
+        </>
       )}
     </div>
   )}
@@ -544,7 +798,7 @@ staffAvatar: { width: 36, height: 36, borderRadius: ‘50%’, background: ‘#1
 staffName:   { fontSize: 11, fontWeight: 700, color: ‘#1a1a1a’, lineHeight: 1.3 },
 staffRole:   { fontSize: 9, color: ‘#aaa’, marginTop: 2, textTransform: ‘uppercase’, letterSpacing: 0.5 },
 
-btnPrimary:  { width: ‘100%’, background: ‘#C8F04B’, color: ‘#000’, border: ‘none’, borderRadius: 12, padding: 15, fontSize: 13, fontWeight: 800, cursor: ‘pointer’, letterSpacing: 1, marginBottom: 8, fontFamily: ‘system-ui’ },
+editResultCard: { background: ‘#fff’, border: ‘1px solid #eee’, borderRadius: 12, padding: 14, marginBottom: 8, cursor: ‘pointer’, boxShadow: ‘0 1px 4px rgba(0,0,0,0.04)’ },  { width: ‘100%’, background: ‘#C8F04B’, color: ‘#000’, border: ‘none’, borderRadius: 12, padding: 15, fontSize: 13, fontWeight: 800, cursor: ‘pointer’, letterSpacing: 1, marginBottom: 8, fontFamily: ‘system-ui’ },
 btnDisabled: { opacity: 0.5, cursor: ‘default’ },
 btnSecondary:{ width: ‘100%’, background: ‘transparent’, border: ‘1px solid #ddd’, borderRadius: 12, padding: 14, fontSize: 13, color: ‘#aaa’, cursor: ‘pointer’, fontFamily: ‘system-ui’ },
 
