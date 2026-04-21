@@ -70,6 +70,8 @@ export async function createManualTicketService({
         paymentMethod
       });
 
+      console.log("CREATING TICKET WITH:", form);
+
       const docRef = await addDoc(collection(db, 'tickets'), {
         ticketNum: num,
         confirmCode: code,
@@ -112,7 +114,9 @@ export async function createManualTicketService({
     }
 
   } catch (err) {
-    console.error("CREATE TICKET ERROR FULL:", err);
-    alert(JSON.stringify(err));
+    console.error("SERVICE ERROR:", err);
+    console.error("ERROR CODE:", err.code);
+    console.error("ERROR MESSAGE:", err.message);
+    throw err;
   }
 }

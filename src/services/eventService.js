@@ -64,7 +64,12 @@ export async function getNextTicketNumber(eventId) {
   const eventRef = doc(db, 'events', eventId);
   const nextNum = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(eventRef);
-    if (!snap.exists()) throw new Error('Event not found');
+    if (!snap.exists()) {
+      if (eventId === "LOCATION") {
+        return null;
+      }
+      throw new Error('Event not found');
+    }
     const data = snap.data();
     const storedDate = data.ticketCounterDate || '';
     const current = storedDate === today ? (data.ticketCounter || 0) : 0;

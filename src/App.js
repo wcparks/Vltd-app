@@ -20,7 +20,6 @@ import LocationManager from "./components/LocationManager";
 import ManualTicket from "./components/ManualTicket";
 import ManagerDashboard from "./components/ManagerDashboard";
 import EmployeeDashboard from "./components/EmployeeDashboard";
-import { getNextTicketNumber } from "./services/eventService";
 import { sendWhatsApp } from "./services/notifyService";
 
 const ACCENT = "#C8F04B";
@@ -287,14 +286,10 @@ if (pinInput === MANAGER_PIN) {
   const createTicket = async () => {
     setLoading(true);
     try {
-      let num, code;
-      if (currentEvent) {
-        num = await getNextTicketNumber(currentEvent.id);
-        code = `VLT-${currentEvent.id.slice(0, 6)}-${num}`;
-      } else {
-        num = String((tickets || []).filter(t => t.date === today()).length + 1).padStart(4, "0");
-        code = `VLT-${today()}-${num}`;
-      }
+      const num = String((tickets || []).filter(t => t.date === today()).length + 1).padStart(4, "0");
+      const code = currentEvent
+        ? `VLT-${currentEvent.id.slice(0, 6)}-${num}`
+        : `VLT-${today()}-${num}`;
       const docRef = await addDoc(collection(db, "tickets"), {
         ticketNum: num, confirmCode: code, date: today(),
         eventId: currentEvent?.id || null,

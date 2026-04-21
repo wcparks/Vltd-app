@@ -50,7 +50,8 @@ export default function ManualTicket({ valetName, valetRole, currentEvent, onClo
       setStep('done');
 
     } catch (err) {
-      console.error(err);
+      console.error("MANUAL TICKET ERROR:", err);
+      console.error("FULL OBJECT:", JSON.stringify(err, null, 2));
       alert(err.message);
     } finally {
       setLoading(false);
