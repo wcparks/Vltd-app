@@ -169,6 +169,7 @@ async function loadTicket(code) {
 
     document.getElementById("loading").classList.add("hidden");
     document.getElementById("main").classList.remove("hidden");
+    document.getElementById("getcar-btn").addEventListener("click", window.requestCar);
 
   } catch(e) {
     console.error(e);
