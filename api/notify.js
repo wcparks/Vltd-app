@@ -48,9 +48,13 @@ export default async function handler(req, res) {
     : process.env.TWILIO_SMS_FROM;
 
   // For car_requested — send to manager number, not customer
-  const to = isWhatsApp
-    ? `whatsapp:${formattedPhone}`
-    : formattedPhone;
+  const managerNumber = process.env.MANAGER_WHATSAPP
+    ? `whatsapp:+${process.env.MANAGER_WHATSAPP.replace(/\D/g, '')}`
+    : null;
+
+  const to = type === 'car_requested' && managerNumber
+    ? managerNumber
+    : (isWhatsApp ? `whatsapp:${formattedPhone}` : formattedPhone);
 
   console.log(`Sending ${channel} to ${to} from ${from}, type: ${type}`);
 
