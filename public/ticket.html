@@ -188,6 +188,23 @@ window.saveName = async function() {
 window.requestCar = async function() {
   if (!ticketDocId) return;
   await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "car_requested",
+        channel: "whatsapp",
+        phone: ticketData?.customerPhone || "",
+        ticketNum: ticketData?.ticketNum,
+        car: ticketData?.car,
+        color: ticketData?.color,
+        spot: ticketData?.spot,
+        customerName: ticketData?.customerName,
+        eventId: ticketData?.eventId || null,
+      }),
+    });
+  } catch(e) {}
   document.getElementById("getcar-section").classList.add("hidden");
   document.getElementById("onway-section").classList.remove("hidden");
 }
