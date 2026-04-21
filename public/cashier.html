@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VLTD · Cashier</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0D0D;
+  --surface:#161616;
+  --border:#2a2a2a;
+  --lime:#C8F04B;
+  --lime-dim:#C8F04B22;
+  --lime-mid:#C8F04B55;
+  --text:#fff;
+  --muted:#666;
+  --subtle:#444;
+  --red:#ff4444;
+  --orange:#FF8C00;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:0 0 60px}
+input,textarea,select{font-family:'DM Mono',monospace}
+
+/* ── Top bar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0}
+.logo{font-family:‘Unbounded’,sans-serif;font-size:15px;font-weight:900;color:var(–lime)}
+.logo-role{font-size:7px;color:var(–subtle);letter-spacing:2px;margin-top:1px}
+.btn-logout{background:transparent;border:1px solid var(–border);border-radius:8px;padding:7px 13px;color:var(–subtle);font-family:‘DM Mono’,monospace;font-size:10px;cursor:pointer;letter-spacing:1px}
+.cashier-name{font-size:10px;color:var(–muted);margin-top:4px;padding:0 20px 16px}
+
+/* ── Tab nav ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(–border);margin:0 20px;margin-bottom:20px}
+.tab{flex:1;background:transparent;border:none;padding:12px 4px;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1.5px;color:var(–subtle);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.tab.active{color:var(–lime);border-bottom-color:var(–lime)}
+.tab-badge{display:inline-block;background:var(–red);color:#fff;border-radius:99px;font-size:7px;padding:1px 5px;margin-left:4px;vertical-align:middle;font-family:‘Unbounded’,sans-serif}
+
+/* ── Panels ── */
+.panel{display:none;padding:0 20px}
+.panel.active{display:block}
+
+/* ── Request cards ── */
+.req-card{background:var(–surface);border:1px solid var(–border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.req-card.urgent{border-color:var(–orange)44;background:#1a1200}
+.req-key{background:var(–lime);color:#000;font-family:‘Unbounded’,sans-serif;font-size:13px;font-weight:900;border-radius:8px;padding:8px 10px;min-width:52px;text-align:center;flex-shrink:0}
+.req-info{flex:1;min-width:0}
+.req-plate{font-family:‘Unbounded’,sans-serif;font-size:14px;font-weight:700;color:var(–text)}
+.req-car{font-size:10px;color:var(–muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.req-time{font-size:9px;color:var(–subtle);margin-top:3px}
+.req-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-sm{border:none;border-radius:8px;padding:7px 10px;font-family:‘Unbounded’,sans-serif;font-size:8px;font-weight:700;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+.btn-ready{background:var(–lime);color:#000}
+.btn-edit-sm{background:var(–surface);border:1px solid var(–border);color:var(–muted)}
+.empty{text-align:center;padding:40px 20px;color:var(–subtle);font-size:10px;letter-spacing:2px}
+
+/* ── Search bar ── */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(–subtle);font-size:13px;pointer-events:none}
+.search-input{width:100%;background:var(–surface);border:1px solid var(–border);border-radius:12px;padding:12px 12px 12px 36px;color:var(–text);font-size:12px;outline:none}
+.search-input:focus{border-color:var(–lime-mid)}
+.search-input::placeholder{color:var(–subtle)}
+
+/* ── Edit ticket ── */
+.ticket-result{background:var(–surface);border:1px solid var(–border);border-radius:14px;padding:14px 16px;margin-bottom:12px;cursor:pointer;transition:border-color .15s}
+.ticket-result:hover{border-color:var(–lime-mid)}
+.tr-top{display:flex;justify-content:space-between;align-items:center}
+.tr-num{font-family:‘Unbounded’,sans-serif;font-size:11px;color:var(–lime)}
+.tr-status{font-size:9px;color:var(–subtle);letter-spacing:1px}
+.tr-plate{font-size:16px;font-family:‘Unbounded’,sans-serif;font-weight:700;margin:4px 0 2px}
+.tr-car{font-size:10px;color:var(–muted)}
+
+/* ── Edit form ── */
+.edit-form{background:var(–surface);border:1px solid var(–border);border-radius:16px;padding:16px;margin-bottom:12px}
+.form-section-title{font-size:7px;color:var(–subtle);letter-spacing:2px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(–border)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field-row.full{grid-template-columns:1fr}
+.field-label{font-size:7px;color:var(–subtle);letter-spacing:1px;margin-bottom:4px}
+.field-input{width:100%;background:#111;border:1px solid var(–border);border-radius:8px;padding:10px 11px;color:var(–text);font-size:12px;outline:none}
+.field-input:focus{border-color:var(–lime-mid)}
+.field-input::placeholder{color:#333}
+textarea.field-input{resize:none;height:64px;line-height:1.5}
+
+/* Color chips */
+.color-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{padding:5px 11px;border-radius:99px;font-size:10px;cursor:pointer;border:1.5px solid transparent;transition:all .12s;background:#111;color:var(–muted);border-color:var(–border)}
+.chip.sel{border-color:var(–lime);color:var(–lime);background:var(–lime-dim)}
+
+/* Status selector */
+.status-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.s-chip{padding:5px 11px;border-radius:8px;font-size:9px;cursor:pointer;border:1px solid var(–border);background:#111;color:var(–muted);letter-spacing:.5px;transition:all .12s}
+.s-chip.sel{border-color:var(–lime);color:var(–lime);background:var(–lime-dim)}
+
+/* Save / action buttons */
+.btn-primary{background:var(–lime);color:#000;border:none;border-radius:12px;padding:14px;width:100%;font-family:‘Unbounded’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:8px}
+.btn-secondary{background:transparent;border:1px solid var(–border);border-radius:12px;padding:13px;width:100%;font-family:‘DM Mono’,monospace;font-size:10px;color:var(–muted);letter-spacing:1px;cursor:pointer;margin-bottom:16px}
+.btn-primary:disabled{opacity:.4;cursor:default}
+
+/* Paper ticket # */
+.paper-num-wrap{background:var(–lime-dim);border:1px solid var(–lime-mid);border-radius:12px;padding:16px;margin-bottom:14px}
+.paper-label{font-size:7px;color:var(–lime);letter-spacing:2px;margin-bottom:8px}
+.paper-input{width:100%;background:transparent;border:none;outline:none;font-family:‘Unbounded’,sans-serif;font-size:28px;font-weight:900;color:var(–lime);text-align:center;letter-spacing:6px}
+.paper-hint{font-size:9px;color:var(–subtle);text-align:center;margin-top:4px;letter-spacing:1px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2a0a;border:1px solid var(–lime-mid);border-radius:10px;padding:10px 20px;font-size:11px;color:var(–lime);letter-spacing:1px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.hidden{display:none!important}
+.mt8{margin-top:8px}
+.divider{border-top:1px solid var(–border);margin:14px 0}
+</style>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="logo">VLTD</div>
+    <div class="logo-role">CASHIER DASHBOARD</div>
+  </div>
+  <button class="btn-logout" onclick="logout()">LOGOUT</button>
+</div>
+<div class="cashier-name" id="cashier-name-bar">Loading...</div>
+
+<!-- Tab nav -->
+
+<div class="tabs" style="margin:0 20px 20px">
+  <button class="tab active" onclick="switchTab('requests',this)">
+    REQUESTS <span class="tab-badge hidden" id="req-badge">0</span>
+  </button>
+  <button class="tab" onclick="switchTab('edit',this)">EDIT TICKET</button>
+  <button class="tab" onclick="switchTab('manual',this)">+ MANUAL</button>
+</div>
+
+<!-- ── PANEL: Car Requests ── -->
+
+<div class="panel active" id="panel-requests">
+  <div id="req-list"><div class="empty">LOADING REQUESTS...</div></div>
+</div>
+
+<!-- ── PANEL: Edit Ticket ── -->
+
+<div class="panel" id="panel-edit">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="edit-search" type="text" placeholder="Search plate, ticket #, name..." oninput="searchTickets()">
+  </div>
+  <div id="search-results"></div>
+  <div id="edit-form-wrap" class="hidden"></div>
+</div>
+
+<!-- ── PANEL: Manual Ticket ── -->
+
+<div class="panel" id="panel-manual">
+  <div class="paper-num-wrap">
+    <div class="paper-label">PAPER TICKET #</div>
+    <input class="paper-input" id="m-ticketnum" type="text" maxlength="8" placeholder="0000" oninput="this.value=this.value.toUpperCase()">
+    <div class="paper-hint">ENTER NUMBER FROM PHYSICAL TICKET</div>
+  </div>
+
+  <div class="edit-form">
+    <div class="form-section-title">VEHICLE</div>
+    <div class="field-row">
+      <div><div class="field-label">MAKE</div><input class="field-input" id="m-make" type="text" placeholder="Toyota"></div>
+      <div><div class="field-label">MODEL</div><input class="field-input" id="m-model" type="text" placeholder="Camry"></div>
+    </div>
+    <div class="field-label">COLOR</div>
+    <div class="color-chips" id="m-color-chips">
+      <span class="chip" onclick="pickColor('m',this,'Black')">Black</span>
+      <span class="chip" onclick="pickColor('m',this,'White')">White</span>
+      <span class="chip" onclick="pickColor('m',this,'Silver')">Silver</span>
+      <span class="chip" onclick="pickColor('m',this,'Gray')">Gray</span>
+      <span class="chip" onclick="pickColor('m',this,'Red')">Red</span>
+      <span class="chip" onclick="pickColor('m',this,'Blue')">Blue</span>
+      <span class="chip" onclick="pickColor('m',this,'Navy')">Navy</span>
+      <span class="chip" onclick="pickColor('m',this,'Green')">Green</span>
+      <span class="chip" onclick="pickColor('m',this,'Gold')">Gold</span>
+      <span class="chip" onclick="pickColor('m',this,'Brown')">Brown</span>
+      <span class="chip" onclick="pickColor('m',this,'Orange')">Orange</span>
+      <span class="chip" onclick="pickColor('m',this,'Yellow')">Yellow</span>
+    </div>
+    <div class="field-row">
+      <div><div class="field-label">PLATE</div><input class="field-input" id="m-plate" type="text" placeholder="ABC1234" oninput="this.value=this.value.toUpperCase()"></div>
+      <div><div class="field-label">SPOT</div><input class="field-input" id="m-spot" type="text" placeholder="B-14" oninput="this.value=this.value.toUpperCase()"></div>
+    </div>
+  </div>
+
+  <div class="edit-form">
+    <div class="form-section-title">CUSTOMER (OPTIONAL)</div>
+    <div class="field-row full">
+      <div><div class="field-label">NAME</div><input class="field-input" id="m-custname" type="text" placeholder="Guest name..."></div>
+    </div>
+    <div class="field-row full">
+      <div><div class="field-label">PHONE</div><input class="field-input" id="m-phone" type="tel" placeholder="Phone number..."></div>
+    </div>
+  </div>
+
+  <div class="edit-form">
+    <div class="form-section-title">NOTES</div>
+    <div class="field-label">DAMAGE</div>
+    <textarea class="field-input" id="m-damage" placeholder="Pre-existing damage..."></textarea>
+    <div class="field-label mt8">SPECIAL NOTES</div>
+    <textarea class="field-input" id="m-notes" placeholder="VIP, rush, instructions..."></textarea>
+  </div>
+
+<button class="btn-primary" onclick="saveManualTicket()">SAVE & MARK PARKED</button>
+<button class="btn-secondary" onclick="clearManualForm()">CLEAR FORM</button>
+
+</div>
+
+<!-- Toast -->
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, query, where, orderBy, onSnapshot,
+  getDocs, getDoc, addDoc, updateDoc, doc, serverTimestamp, limit
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCoLb5irRmwJIyBVxC2T46saECG5ZXKXJU",
+  authDomain: "wc-valet-app.firebaseapp.com",
+  projectId: "wc-valet-app",
+  storageBucket: "wc-valet-app.firebasestorage.app",
+  messagingSenderId: "425991585304",
+  appId: "1:425991585304:web:83a95246daa77b2e5a0d6d"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser  = null;
+let currentStaff = null; // Firestore staff doc
+let editDocId    = null; // ticket being edited
+let mColorSel    = "";   // manual form color
+let eColorSel    = "";   // edit form color
+let eStatusSel   = "";
+let searchTimer  = null;
+
+// ── Auth guard ────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = "/login"; return; }
+  currentUser = user;
+
+  // Try to load staff profile for display name / role check
+  try {
+    const staffSnap = await getDocs(
+      query(collection(db, "staff"), where("uid", "==", user.uid), limit(1))
+    );
+    if (!staffSnap.empty) {
+      currentStaff = staffSnap.docs[0].data();
+      const name = currentStaff.name || currentStaff.displayName || user.email;
+      document.getElementById("cashier-name-bar").textContent = "LOGGED IN AS: " + name.toUpperCase();
+    } else {
+      document.getElementById("cashier-name-bar").textContent = "LOGGED IN AS: " + (user.displayName || user.email || "CASHIER").toUpperCase();
+    }
+  } catch (e) {
+    document.getElementById("cashier-name-bar").textContent = "LOGGED IN AS: " + (user.displayName || user.email || "CASHIER").toUpperCase();
+  }
+
+  startRequestsListener();
+});
+
+// ── Logout ────────────────────────────────────────────────────────────
+window.logout = function () {
+  signOut(auth).then(() => { window.location.href = "/login"; });
+};
+
+// ── Tab switching ─────────────────────────────────────────────────────
+window.switchTab = function (name, btn) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("panel-" + name).classList.add("active");
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2500);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// PANEL 1 — CAR REQUESTS (live listener)
+// ─────────────────────────────────────────────────────────────────────
+function startRequestsListener() {
+  const q = query(
+    collection(db, "tickets"),
+    where("status", "==", "retrieving"),
+    orderBy("updatedAt", "desc")
+  );
+  onSnapshot(q, (snap) => {
+    const badge = document.getElementById("req-badge");
+    const count = snap.size;
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+    renderRequests(snap.docs);
+  }, (err) => {
+    // Fallback: query without orderBy if index missing
+    console.warn("Requests listener error, trying fallback:", err);
+    const q2 = query(collection(db, "tickets"), where("status", "==", "retrieving"));
+    onSnapshot(q2, (snap2) => renderRequests(snap2.docs));
+  });
+}
+
+function renderRequests(docs) {
+  const el = document.getElementById("req-list");
+  if (docs.length === 0) {
+    el.innerHTML = '<div class="empty">NO PENDING REQUESTS</div>';
+    return;
+  }
+  el.innerHTML = docs.map(d => {
+    const t = d.data();
+    const num   = t.ticketNum || d.id.slice(-4).toUpperCase();
+    const plate = t.plate     || "--";
+    const car   = [t.color, t.make || t.car, t.model].filter(Boolean).join(" ") || "--";
+    const spot  = t.spot      || "?";
+    const time  = t.updatedAt?.toDate
+      ? t.updatedAt.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "";
+    return `
+      <div class="req-card">
+        <div class="req-key">#${num}</div>
+        <div class="req-info">
+          <div class="req-plate">${plate}</div>
+          <div class="req-car">${car} · SPOT ${spot}</div>
+          ${time ? `<div class="req-time">Requested at ${time}</div>` : ""}
+        </div>
+        <div class="req-actions">
+          <button class="btn-sm btn-ready" onclick="markDelivered('${d.id}')">DELIVERED</button>
+          <button class="btn-sm btn-edit-sm" onclick="openEditFromRequest('${d.id}')">EDIT</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+window.markDelivered = async function (docId) {
+  await updateDoc(doc(db, "tickets", docId), { status: "delivered", updatedAt: serverTimestamp() });
+  toast("✓ Marked as delivered");
+};
+
+window.openEditFromRequest = function (docId) {
+  // Switch to edit tab and load that ticket
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab")[1].classList.add("active");
+  document.getElementById("panel-edit").classList.add("active");
+  loadEditForm(docId);
+};
+
+// ─────────────────────────────────────────────────────────────────────
+// PANEL 2 — EDIT TICKET
+// ─────────────────────────────────────────────────────────────────────
+let searchDebounce = null;
+
+window.searchTickets = async function () {
+  const raw = document.getElementById("edit-search").value.trim().toUpperCase();
+  clearTimeout(searchDebounce);
+  if (raw.length < 2) {
+    document.getElementById("search-results").innerHTML = "";
+    document.getElementById("edit-form-wrap").classList.add("hidden");
+    return;
+  }
+  searchDebounce = setTimeout(async () => {
+    const results = [];
+    // Search by plate
+    const byPlate = await getDocs(query(collection(db, "tickets"), where("plate", "==", raw), limit(5)));
+    byPlate.forEach(d => results.push(d));
+    // Search by ticketNum (stored as string e.g. "0008")
+    const byNum = await getDocs(query(collection(db, "tickets"), where("ticketNum", "==", raw.replace(/^#/, "")), limit(5)));
+    byNum.forEach(d => { if (!results.find(r => r.id === d.id)) results.push(d); });
+
+    renderSearchResults(results);
+  }, 350);
+};
+
+function renderSearchResults(docs) {
+  const el = document.getElementById("search-results");
+  if (docs.length === 0) {
+    el.innerHTML = '<div class="empty" style="padding:20px 0">NO TICKETS FOUND</div>';
+    document.getElementById("edit-form-wrap").classList.add("hidden");
+    return;
+  }
+  el.innerHTML = docs.map(d => {
+    const t = d.data();
+    const num   = t.ticketNum || d.id.slice(-4);
+    const plate = t.plate || "--";
+    const car   = [t.color, t.make || t.car, t.model].filter(Boolean).join(" ") || "--";
+    const status = (t.status || "parked").toUpperCase();
+    return `
+      <div class="ticket-result" onclick="loadEditForm('${d.id}')">
+        <div class="tr-top">
+          <span class="tr-num">#${num}</span>
+          <span class="tr-status">${status}</span>
+        </div>
+        <div class="tr-plate">${plate}</div>
+        <div class="tr-car">${car}</div>
+      </div>`;
+  }).join("");
+}
+
+async function loadEditForm(docId) {
+  editDocId = docId;
+  document.getElementById("search-results").innerHTML = "";
+  const snap = await getDoc(doc(db, "tickets", docId));
+  if (!snap.exists()) { toast("Ticket not found"); return; }
+  const t = snap.data();
+
+  eColorSel  = t.color  || "";
+  eStatusSel = t.status || "parked";
+
+  const COLORS = ["Black","White","Silver","Gray","Red","Blue","Navy","Green","Gold","Brown","Orange","Yellow"];
+  const STATUSES = ["parked","retrieving","delivered"];
+
+  const colorChips = COLORS.map(c =>
+    `<span class="chip${eColorSel===c?' sel':''}" onclick="pickColor('e',this,'${c}')">${c}</span>`
+  ).join("");
+
+  const statusChips = STATUSES.map(s =>
+    `<span class="s-chip${eStatusSel===s?' sel':''}" onclick="pickStatus(this,'${s}')">${s.toUpperCase()}</span>`
+  ).join("");
+
+  document.getElementById("edit-form-wrap").innerHTML = `
+    <div class="edit-form">
+      <div class="form-section-title">TICKET #${t.ticketNum || docId.slice(-4).toUpperCase()}</div>
+      <div class="field-row">
+        <div><div class="field-label">MAKE</div><input class="field-input" id="e-make" value="${t.make||t.car||''}"></div>
+        <div><div class="field-label">MODEL</div><input class="field-input" id="e-model" value="${t.model||''}"></div>
+      </div>
+      <div class="field-label">COLOR</div>
+      <div class="color-chips" id="e-color-chips">${colorChips}</div>
+      <div class="field-row">
+        <div><div class="field-label">PLATE</div><input class="field-input" id="e-plate" value="${t.plate||''}" oninput="this.value=this.value.toUpperCase()"></div>
+        <div><div class="field-label">SPOT</div><input class="field-input" id="e-spot" value="${t.spot||''}" oninput="this.value=this.value.toUpperCase()"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-section-title">CUSTOMER</div>
+      <div class="field-row full">
+        <div><div class="field-label">NAME</div><input class="field-input" id="e-custname" value="${t.customerName||''}" placeholder="Guest name..."></div>
+      </div>
+      <div class="field-row full">
+        <div><div class="field-label">PHONE</div><input class="field-input" id="e-phone" type="tel" value="${t.customerPhone||''}" placeholder="Phone..."></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-section-title">STATUS</div>
+      <div class="status-chips">${statusChips}</div>
+      <div class="divider"></div>
+      <div class="field-label">DAMAGE NOTES</div>
+      <textarea class="field-input" id="e-damage" style="margin-bottom:10px">${t.damageNotes||''}</textarea>
+
+```
+  <div class="field-label">SPECIAL NOTES</div>
+  <textarea class="field-input" id="e-notes">${t.notes||''}</textarea>
+</div>
+<button class="btn-primary" onclick="saveEdit()">SAVE CHANGES</button>
+<button class="btn-secondary" onclick="cancelEdit()">CANCEL</button>
+```
+
+`;
+document.getElementById(“edit-form-wrap”).classList.remove(“hidden”);
+document.getElementById(“edit-form-wrap”).scrollIntoView({ behavior: “smooth”, block: “start” });
+}
+
+window.pickColor = function (prefix, el, color) {
+const container = document.getElementById(prefix + “-color-chips”);
+container.querySelectorAll(”.chip”).forEach(c => c.classList.remove(“sel”));
+el.classList.add(“sel”);
+if (prefix === “m”) mColorSel = color;
+else eColorSel = color;
+};
+
+window.pickStatus = function (el, status) {
+document.querySelectorAll(”.s-chip”).forEach(c => c.classList.remove(“sel”));
+el.classList.add(“sel”);
+eStatusSel = status;
+};
+
+window.saveEdit = async function () {
+if (!editDocId) return;
+const updates = {
+make:         document.getElementById(“e-make”).value.trim(),
+model:        document.getElementById(“e-model”).value.trim(),
+color:        eColorSel,
+plate:        document.getElementById(“e-plate”).value.trim().toUpperCase(),
+spot:         document.getElementById(“e-spot”).value.trim().toUpperCase(),
+customerName: document.getElementById(“e-custname”).value.trim(),
+customerPhone:document.getElementById(“e-phone”).value.trim(),
+status:       eStatusSel,
+damageNotes:  document.getElementById(“e-damage”).value.trim(),
+notes:        document.getElementById(“e-notes”).value.trim(),
+updatedAt:    serverTimestamp(),
+updatedBy:    currentUser?.uid || “cashier”,
+};
+// Remove empty strings so we don’t overwrite with blanks unintentionally
+Object.keys(updates).forEach(k => { if (updates[k] === “”) delete updates[k]; });
+try {
+await updateDoc(doc(db, “tickets”, editDocId), updates);
+toast(“✓ Ticket updated”);
+cancelEdit();
+} catch (e) {
+console.error(e);
+toast(“Error saving — try again”);
+}
+};
+
+window.cancelEdit = function () {
+editDocId = null;
+document.getElementById(“edit-form-wrap”).classList.add(“hidden”);
+document.getElementById(“edit-form-wrap”).innerHTML = “”;
+document.getElementById(“edit-search”).value = “”;
+document.getElementById(“search-results”).innerHTML = “”;
+};
+
+// ─────────────────────────────────────────────────────────────────────
+// PANEL 3 — MANUAL TICKET
+// ─────────────────────────────────────────────────────────────────────
+window.saveManualTicket = async function () {
+const ticketNum = document.getElementById(“m-ticketnum”).value.trim();
+const plate     = document.getElementById(“m-plate”).value.trim().toUpperCase();
+const make      = document.getElementById(“m-make”).value.trim();
+const model     = document.getElementById(“m-model”).value.trim();
+const spot      = document.getElementById(“m-spot”).value.trim().toUpperCase();
+
+if (!plate) { toast(“Plate is required”); return; }
+if (!ticketNum) { toast(“Paper ticket # is required”); return; }
+
+const data = {
+ticketNum,
+plate,
+make,
+car: make, // keep legacy field in sync
+model,
+color:        mColorSel,
+spot,
+customerName: document.getElementById(“m-custname”).value.trim(),
+customerPhone:document.getElementById(“m-phone”).value.trim(),
+damageNotes:  document.getElementById(“m-damage”).value.trim(),
+notes:        document.getElementById(“m-notes”).value.trim(),
+status:       “parked”,
+source:       “manual”,
+createdBy:    currentStaff?.name || currentUser?.displayName || currentUser?.email || “cashier”,
+createdByUid: currentUser?.uid || “”,
+time:         serverTimestamp(),
+updatedAt:    serverTimestamp(),
+};
+
+// Strip empty fields
+Object.keys(data).forEach(k => { if (data[k] === “”) delete data[k]; });
+
+try {
+await addDoc(collection(db, “tickets”), data);
+toast(“✓ Ticket saved & marked parked”);
+clearManualForm();
+} catch (e) {
+console.error(e);
+toast(“Error saving ticket”);
+}
+};
+
+window.clearManualForm = function () {
+[“m-ticketnum”,“m-make”,“m-model”,“m-plate”,“m-spot”,“m-custname”,“m-phone”,“m-damage”,“m-notes”]
+.forEach(id => { document.getElementById(id).value = “”; });
+mColorSel = “”;
+document.querySelectorAll(”#m-color-chips .chip”).forEach(c => c.classList.remove(“sel”));
+};
+</script>
+
+</body>
+</html>
