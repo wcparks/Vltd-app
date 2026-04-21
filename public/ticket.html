@@ -136,7 +136,8 @@ async function loadTicket(code) {
   try {
     const q = query(collection(db, "tickets"), where("confirmCode", "==", code));
     const snap = await getDocs(q);
-
+    
+    alert("Tickets found: " + snap.size + " for code: " + code);
     if (snap.empty) {
       document.getElementById("loading").classList.add("hidden");
       document.getElementById("error").classList.remove("hidden");
