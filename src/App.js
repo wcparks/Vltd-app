@@ -577,6 +577,7 @@ if (pinInput === MANAGER_PIN) {
   // -- Route: special pages -----------------------------------
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
   if (window.location.pathname === "/reviews") return <ReviewsPage isManager={valetRole === "manager"} />;
+  if (window.location.pathname === "/ticket") { window.location.replace(window.location.href.replace("/ticket", "/ticket.html")); return null; }
 
   // -- Login --------------------------------------------------
   if (!valetName) return (
