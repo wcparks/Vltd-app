@@ -1,9 +1,9 @@
 // ============================================================
 // CashierView.jsx – Cashier role: tips, delivered tickets,
 //                    receipts, manual ticket entry with
-//                    "retrieved by" valet selector
+//                    “retrieved by” valet selector
 // ============================================================
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from ‘react’;
 import { db } from ‘../config/firebase’;
 import {
 collection, query, where, onSnapshot,
@@ -29,7 +29,6 @@ const [editColorSel, setEditColorSel]   = useState(’’);
 const [editStatusSel, setEditStatusSel] = useState(’’);
 const [editSaving, setEditSaving]       = useState(false);
 const [editSuccess, setEditSuccess]     = useState(false);
-const editSearchTimer = useRef(null);
 
 // ── Manual ticket form state ──────────────────────────────
 const [mForm, setMForm] = useState({
