@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/ticket", "destination": "/public/ticket.html" },
-    { "source": "/((?!api).*)", "destination": "/index.html" }
+    { "source": "/ticket", "destination": "/ticket.html" },
+    { "source": "/((?!ticket\\.html|api).*)", "destination": "/index.html" }
   ]
 }
+
