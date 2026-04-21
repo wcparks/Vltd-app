@@ -464,7 +464,7 @@ if (pinInput === MANAGER_PIN) {
       const ticket = tickets.find(t => t.id === id);
       await fetch("/api/notify", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticketNum: ticket?.ticketNum, car: ticket?.car, color: ticket?.color, spot: ticket?.spot, customerName: ticket?.customerName }),
+        body: JSON.stringify({ type: "car_requested", channel: "whatsapp", phone: ticket?.customerPhone || "", ticketNum: ticket?.ticketNum, car: ticket?.car, color: ticket?.color, spot: ticket?.spot, customerName: ticket?.customerName, eventId: ticket?.eventId || null }),
       });
     } catch (e) {}
   };
@@ -867,7 +867,7 @@ if (pinInput === MANAGER_PIN) {
             try {
               await fetch("/api/notify", {
                 method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ticketNum: activeTicket.ticketNum, car: activeTicket.car, color: activeTicket.color, spot: activeTicket.spot, customerName: activeTicket.customerName }),
+                body: JSON.stringify({ type: "car_requested", channel: "whatsapp", phone: activeTicket?.customerPhone || "", ticketNum: activeTicket.ticketNum, car: activeTicket.car, color: activeTicket.color, spot: activeTicket.spot, customerName: activeTicket.customerName, eventId: activeTicket?.eventId || null }),
               });
             } catch (e) {}
             setView("dashboard");
