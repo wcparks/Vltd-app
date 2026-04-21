@@ -4,7 +4,7 @@
 //                    "retrieved by" valet selector
 // ============================================================
 import { useState, useEffect, useRef } from 'react';
-import { db } from ‘../config/firebase’;
+import { db } from '../config/firebase’;
 import {
 collection, query, where, onSnapshot,
 updateDoc, addDoc, doc, getDocs, serverTimestamp
