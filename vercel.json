@@ -1,8 +1,8 @@
 {
   "rewrites": [
     { "source": "/ticket", "destination": "/ticket.html" },
-    { "source": "/cashier", "destination": "/cashier.html" },
-    { "source": "/((?!ticket\\.html|cashier\\.html|api).*)", "destination": "/index.html" }
+    { "source": "/((?!ticket\\.html|api).*)", "destination": "/index.html" }
   ]
 }
+
 
