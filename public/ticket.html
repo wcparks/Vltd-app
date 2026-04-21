@@ -169,7 +169,29 @@ async function loadTicket(code) {
 
     document.getElementById("loading").classList.add("hidden");
     document.getElementById("main").classList.remove("hidden");
-    document.getElementById("getcar-btn").addEventListener("click", window.requestCar);
+    document.getElementById("getcar-btn").addEventListener("click", async function() {
+  if (!ticketDocId) return;
+  await updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving" });
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "car_requested",
+        channel: "whatsapp",
+        phone: ticketData?.customerPhone || "",
+        ticketNum: ticketData?.ticketNum,
+        car: ticketData?.car,
+        color: ticketData?.color,
+        spot: ticketData?.spot,
+        customerName: ticketData?.customerName,
+        eventId: ticketData?.eventId || null,
+      }),
+    });
+  } catch(e) {}
+  document.getElementById("getcar-section").classList.add("hidden");
+  document.getElementById("onway-section").classList.remove("hidden");
+});
 
   } catch(e) {
     console.error(e);
