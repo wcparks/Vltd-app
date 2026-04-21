@@ -512,7 +512,7 @@ if (pinInput === MANAGER_PIN) {
   };
 
   // -- Auth gate: ABSOLUTE FIRST returns ----------------------
-   if (window.location.pathname === "/ticket") { window.location.replace(window.location.href.replace("/ticket", "/ticket.html")); return null; }
+   if (window.location.pathname === "/ticket") { window.location.replace("https://valet-app-woad.vercel.app/ticket.html" + window.location.search); return null; }
    if (authUser === undefined) {
     return (
       <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
