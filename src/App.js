@@ -633,7 +633,7 @@ if (pinInput === MANAGER_PIN) {
 
   // -- Cashier ------------------------------------------------
   if (valetRole === "cashier") {
-    return <CashierView eventId={currentEvent?.id} onLogout={signOut} />;
+    return <CashierView eventId={currentEvent?.id} staffName={valetName} onLogout={signOut} />;
   }
 
   // -- Retrieving alert ---------------------------------------
