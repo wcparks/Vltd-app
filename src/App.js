@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { db, storage, messaging, requestNotificationPermission, onMessage } from "./config/firebase";
+import { db, storage, messaging, auth, requestNotificationPermission, onMessage } from "./config/firebase";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
 import {
   collection, addDoc, doc, updateDoc, deleteDoc,
   onSnapshot, serverTimestamp, query, orderBy, where, getDoc, getDocs
@@ -95,6 +96,44 @@ export default function App() {
   const [spotPhoto, setSpotPhoto] = useState("");
   const spotPhotoRef = useRef(null);
 
+  const [authUser, setAuthUser] = useState(undefined); // undefined = loading, null = logged out
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setAuthUser(user);
+      if (!user) {
+        localStorage.removeItem("valetName");
+        localStorage.removeItem("valetRole");
+        localStorage.removeItem("currentEvent");
+        localStorage.removeItem("clockedIn");
+        localStorage.removeItem("clockInTime");
+        setValetName("");
+        setValetRole("");
+        setCurrentEvent(null);
+        setClockedIn(false);
+        setClockInTime(null);
+      }
+    });
+    return unsub;
+  }, []);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+    } catch (err) {
+      setLoginError(err.message);
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -103,9 +142,9 @@ export default function App() {
     return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); };
   }, []);
 
-  // -- Ticket listener ----------------------------------------
-  // Everyone (including manager) must be in an event/location to see tickets
+  // -- Ticket listener (only when authenticated) --------------
   useEffect(() => {
+    if (!authUser) return;
     const q = query(
       collection(db, "tickets"),
       orderBy("time", "desc")
@@ -131,12 +170,13 @@ export default function App() {
       prevTicketsRef.current = newRef;
       setTickets(data);
     });
-  }, [currentEvent]);
+  }, [authUser, currentEvent]);
 
   useEffect(() => {
+    if (!authUser) return;
     const q = query(collection(db, "logins"), orderBy("time", "desc"));
     return onSnapshot(q, (snap) => setLogins(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-  }, []);
+  }, [authUser]);
 
   useEffect(() => {
     if (!valetName) return;
@@ -263,12 +303,13 @@ if (pinInput === MANAGER_PIN) {
     setView("dashboard"); // explicitly navigate to dashboard after joining
   };
 
-  const signOut = () => {
+  const signOut = async () => {
     if (clockedIn) { alert("Please clock out before signing out."); return; }
     localStorage.removeItem("valetName");
     localStorage.removeItem("valetRole");
     localStorage.removeItem("currentEvent");
     setValetName(""); setValetRole(""); setCurrentEvent(null);
+    await firebaseSignOut(auth);
   };
 
   // Leave event/location — clocks out non-managers, returns to join screen
@@ -470,8 +511,55 @@ if (pinInput === MANAGER_PIN) {
     }
   };
 
+  // -- Auth gate: ABSOLUTE FIRST returns ----------------------
+  if (authUser === undefined) {
+    return (
+      <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#444", fontSize: "10px", letterSpacing: "2px", fontFamily: "'DM Mono', monospace" }}>LOADING...</div>
+      </div>
+    );
+  }
+
+  if (authUser === null) {
+    return (
+      <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'DM Mono', monospace" }}>
+        <div style={{ fontFamily: "sans-serif", fontSize: "26px", fontWeight: 900, color: "#C8F04B", marginBottom: "4px" }}>VLTD</div>
+        <div style={{ fontSize: "9px", color: "#555", letterSpacing: "3px", marginBottom: "40px" }}>VALET MANAGEMENT</div>
+        <form onSubmit={handleLogin} style={{ width: "100%", maxWidth: 360 }}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={loginEmail}
+            onChange={e => setLoginEmail(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", background: "#111", border: "1px solid #2a2a2a", borderRadius: "10px", padding: "14px", color: "#fff", fontFamily: "'DM Mono', monospace", fontSize: "14px", marginBottom: "10px", outline: "none" }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={loginPassword}
+            onChange={e => setLoginPassword(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", background: "#111", border: "1px solid #2a2a2a", borderRadius: "10px", padding: "14px", color: "#fff", fontFamily: "'DM Mono', monospace", fontSize: "14px", marginBottom: "10px", outline: "none" }}
+          />
+          {loginError && (
+            <div style={{ color: "#ff4444", fontSize: "11px", marginBottom: "10px", padding: "10px", background: "#ff444411", borderRadius: "8px" }}>
+              {loginError}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={loginLoading}
+            style={{ background: "#C8F04B", color: "#000", border: "none", borderRadius: "12px", padding: "15px", width: "100%", fontFamily: "sans-serif", fontSize: "13px", fontWeight: 700, cursor: "pointer", letterSpacing: "1px", opacity: loginLoading ? 0.6 : 1 }}
+          >
+            {loginLoading ? "SIGNING IN..." : "SIGN IN"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   const ticketURL = (code) => `https://valet-app-woad.vercel.app/ticket?code=${encodeURIComponent(code)}`;
 
+  // -- Computed view state (only runs when authenticated) -----
   const filteredTickets = search ? tickets.filter(t => {
     const s = search.toLowerCase();
     return (t.plate || "").toLowerCase().includes(s) || (t.car || "").toLowerCase().includes(s) ||
