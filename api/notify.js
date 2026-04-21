@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   const {
     type, phone, ticketNumber, customerName, ticketUrl,
-    venueName, valetName, estimatedMinutes, channel = 'whatsapp'
+    venueName, valetName, estimatedMinutes, channel = 'whatsapp', eventId
   } = req.body;
 
   if (!phone || !type) return res.status(400).json({ error: 'Missing phone or type' });
@@ -52,8 +52,14 @@ export default async function handler(req, res) {
     ? `whatsapp:+${process.env.MANAGER_WHATSAPP.replace(/\D/g, '')}`
     : null;
 
-  const to = type === 'car_requested' && managerNumber
-    ? managerNumber
+  const eventManagerNumber = process.env.MANAGER_WHATSAPP_EVENTS
+    ? `whatsapp:+${process.env.MANAGER_WHATSAPP_EVENTS.replace(/\D/g, '')}`
+    : managerNumber;
+
+  const isEventTicket = !!eventId;
+
+  const to = type === 'car_requested'
+    ? (isEventTicket ? eventManagerNumber : managerNumber) || `whatsapp:${formattedPhone}`
     : (isWhatsApp ? `whatsapp:${formattedPhone}` : formattedPhone);
 
   console.log(`Sending ${channel} to ${to} from ${from}, type: ${type}`);
