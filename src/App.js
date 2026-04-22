@@ -179,7 +179,6 @@ export default function App() {
   const handleJoinEvent = (event) => {
     if (event?.__managerTools) {
       setView("manager");
-      setSubView(null);
       return;
     }
     setCurrentEvent(event);

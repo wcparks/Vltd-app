@@ -50,7 +50,7 @@ where('eventId', '==', eventId),
 where('status', 'in', ['retrieving', 'delivered'])
 );
 const unsub = onSnapshot(q, snap => {
-const list = snap.docs.map(d => ({ id: d.id, …d.data() }));
+const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 list.sort((a, b) =>
 (b.deliveredAt || b.time?.seconds || 0) -
 (a.deliveredAt || a.time?.seconds || 0)
@@ -70,7 +70,7 @@ try {
 const snap = await getDocs(
 query(collection(db, 'valetAccounts'), where('active', '==', true))
 );
-const staff = snap.docs.map(d => ({ id: d.id, …d.data() }));
+const staff = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 setActiveStaff(staff);
 } catch (e) {
 console.error('Could not load staff:', e);
@@ -93,7 +93,7 @@ await updateDoc(doc(db, 'tickets', ticket.id), {
 tipPaid: true,
 tipPaidAt: Date.now()
 });
-setTipConfirmed(prev => ({ …prev, [ticket.id]: true }));
+setTipConfirmed(prev => ({ ...prev, [ticket.id]: true }));
 setSelected(null);
 }
 
@@ -145,9 +145,8 @@ if (raw.length < 2) { setEditResults([]); return; }
 try {
 const results = [];
 const seen = new Set();
-const add = (d) => { if (!seen.has(d.id)) { seen.add(d.id); results.push({ id: d.id, …d.data() }); }};
+const add = (d) => { if (!seen.has(d.id)) { seen.add(d.id); results.push({ id: d.id, ...d.data() }); }};
 
-```
   // Search by plate (exact)
   const byPlate = await getDocs(query(collection(db, 'tickets'), where('plate', '==', raw)));
   byPlate.forEach(add);
@@ -185,7 +184,6 @@ const add = (d) => { if (!seen.has(d.id)) { seen.add(d.id); results.push({ id: d
   results.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
   setEditResults(results.slice(0, 10)); // cap at 10
 } catch (e) { console.error('Search error:', e); }
-```
 
 }
 
@@ -256,7 +254,6 @@ const confirmedTips = tickets
 return (
 <div style={s.wrap}>
 
-```
   {/* ── Header ── */}
   <div style={s.header}>
     <div>
@@ -733,7 +730,6 @@ return (
     </div>
   )}
 </div>
-```
 
 );
 }
@@ -797,7 +793,8 @@ staffAvatar: { width: 36, height: 36, borderRadius: '50%', background: '#1a1a1a'
 staffName:   { fontSize: 11, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3 },
 staffRole:   { fontSize: 9, color: '#aaa', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
 
-editResultCard: { background: '#fff', border: '1px solid #eee', borderRadius: 12, padding: 14, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' },  { width: '100%', background: '#C8F04B', color: '#000', border: 'none', borderRadius: 12, padding: 15, fontSize: 13, fontWeight: 800, cursor: 'pointer', letterSpacing: 1, marginBottom: 8, fontFamily: 'system-ui' },
+editResultCard: { background: '#fff', border: '1px solid #eee', borderRadius: 12, padding: 14, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' },
+btnPrimary:  { width: '100%', background: '#C8F04B', color: '#000', border: 'none', borderRadius: 12, padding: 15, fontSize: 13, fontWeight: 800, cursor: 'pointer', letterSpacing: 1, marginBottom: 8, fontFamily: 'system-ui' },
 btnDisabled: { opacity: 0.5, cursor: 'default' },
 btnSecondary:{ width: '100%', background: 'transparent', border: '1px solid #ddd', borderRadius: 12, padding: 14, fontSize: 13, color: '#aaa', cursor: 'pointer', fontFamily: 'system-ui' },
 
