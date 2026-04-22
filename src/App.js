@@ -18,6 +18,7 @@ import PrivacyPage from "./components/PrivacyPage";
 import ManualTicket from "./components/ManualTicket";
 import EmployeeDashboard from "./components/EmployeeDashboard";
 import ValetDashboard from "./components/ValetDashboard";
+import SupervisorView from "./components/SupervisorView";
 
 function today() { return new Date().toISOString().slice(0, 10); }
 
@@ -126,6 +127,7 @@ export default function App() {
     }
   }
 
+  if (valetRole === "supervisor") return <SupervisorView user={{ name: valetName, role: valetRole }} tickets={tickets} onSignOut={signOut} onNewTicket={() => setView("new")} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onClockIn={clockIn} onClockOut={clockOut} isClockedIn={clockedIn} />;
   if (valetRole === "cashier") return <CashierView eventId={currentEvent?.id} staffName={valetName} onLogout={signOut} />;
 
   if (retrievingAlert) return <RetrievingAlert ticket={retrievingAlert} onDismiss={() => setRetrievingAlert(null)} />;
