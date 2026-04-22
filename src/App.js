@@ -1,10 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import { db, messaging, auth, onMessage } from "./config/firebase";
-import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import {
-  collection, addDoc, onSnapshot, serverTimestamp, query, orderBy
-} from "firebase/firestore";
+import { useState } from "react";
 import { useTickets } from "./hooks/useTickets";
+import { useClock } from "./hooks/useClock";
+import { useAuth } from "./hooks/useAuth";
+import { useFirebaseListeners } from "./hooks/useFirebaseListeners";
 
 import EmailLogin from "./components/EmailLogin";
 import PinLogin from "./components/PinLogin";
@@ -47,7 +45,6 @@ export default function App() {
   const [currentEvent, setCurrentEvent] = useState(() => {
     try { return JSON.parse(localStorage.getItem("currentEvent")) || null; } catch { return null; }
   });
-  const prevTicketsRef = useRef({});
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showManualTicket, setShowManualTicket] = useState(false);
   const [editTicket, setEditTicket] = useState(null);
@@ -55,152 +52,20 @@ export default function App() {
 
   const [authUser, setAuthUser] = useState(undefined);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setAuthUser(user);
-      if (!user) {
-        localStorage.removeItem("valetName");
-        localStorage.removeItem("valetRole");
-        localStorage.removeItem("currentEvent");
-        localStorage.removeItem("clockedIn");
-        localStorage.removeItem("clockInTime");
-        setValetName("");
-        setValetRole("");
-        setCurrentEvent(null);
-        setClockedIn(false);
-        setClockInTime(null);
-      }
-    });
-    return unsub;
-  }, []);
+  useFirebaseListeners({
+    authUser, valetName, currentEvent, tickets,
+    setAuthUser, setValetName, setValetRole, setCurrentEvent,
+    setClockedIn, setClockInTime, setIsOnline, setTickets, setLogins, setRetrievingAlert,
+  });
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); };
-  }, []);
+  const { clockIn, clockOut } = useClock({
+    valetName, valetRole, currentEvent, clockedIn, clockInTime, setClockedIn, setClockInTime,
+  });
 
-  useEffect(() => {
-    if (!authUser) return;
-    const q = query(collection(db, "tickets"), orderBy("time", "desc"));
-    return onSnapshot(q, (snap) => {
-      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (currentEvent) {
-        data = data.filter(t => t.eventId === currentEvent.id);
-      } else {
-        data = data.filter(t => !t.eventId);
-      }
-      data.forEach(ticket => {
-        const prev = prevTicketsRef.current[ticket.id];
-        if (prev && prev.status !== "retrieving" && ticket.status === "retrieving") {
-          playAlert();
-          setRetrievingAlert(ticket);
-          setTimeout(() => setRetrievingAlert(null), 8000);
-        }
-      });
-      const newRef = {};
-      data.forEach(t => newRef[t.id] = t);
-      prevTicketsRef.current = newRef;
-      setTickets(data);
-    });
-  }, [authUser, currentEvent]);
-
-  useEffect(() => {
-    if (!authUser) return;
-    const q = query(collection(db, "logins"), orderBy("time", "desc"));
-    return onSnapshot(q, (snap) => setLogins(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-  }, [authUser]);
-
-  useEffect(() => {
-    if (!valetName) return;
-    try {
-      const unsub = onMessage(messaging, (payload) => {
-        playAlert();
-        const t = tickets.find(t => t.confirmCode === payload.data?.confirmCode);
-        if (t) setRetrievingAlert(t);
-        else setRetrievingAlert({ ticketNum: payload.data?.ticketNum || "??", car: payload.notification?.body || "", color: "", spot: "", customerName: "" });
-        setTimeout(() => setRetrievingAlert(null), 8000);
-      });
-      return () => unsub();
-    } catch (e) {}
-  }, [valetName, tickets]);
-
-  function playAlert() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [0, 0.15, 0.3].forEach((time, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = 600 + (i * 100);
-        gain.gain.setValueAtTime(0.4, ctx.currentTime + time);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.12);
-        osc.start(ctx.currentTime + time);
-        osc.stop(ctx.currentTime + time + 0.12);
-      });
-    } catch (e) {}
-    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
-  }
-
-  const clockIn = async () => {
-    const time = new Date().toISOString();
-    localStorage.setItem("clockedIn", "true");
-    localStorage.setItem("clockInTime", time);
-    setClockedIn(true);
-    setClockInTime(time);
-    await addDoc(collection(db, "clockEvents"), {
-      name: valetName, role: valetRole,
-      eventId: currentEvent?.id || null,
-      eventName: currentEvent?.name || null,
-      type: "in", time: serverTimestamp(), date: today()
-    }).catch(() => {});
-  };
-
-  const clockOut = async () => {
-    const inTime = new Date(clockInTime);
-    const outTime = new Date();
-    const hours = ((outTime - inTime) / 3600000).toFixed(2);
-    localStorage.setItem("clockedIn", "false");
-    localStorage.removeItem("clockInTime");
-    setClockedIn(false);
-    setClockInTime(null);
-    await addDoc(collection(db, "clockEvents"), {
-      name: valetName, role: valetRole,
-      eventId: currentEvent?.id || null,
-      eventName: currentEvent?.name || null,
-      type: "out", time: serverTimestamp(), date: today(),
-      hoursWorked: parseFloat(hours)
-    }).catch(() => {});
-    alert(`Shift complete! You worked ${hours} hours.`);
-  };
-
-  const handleJoinEvent = (event) => {
-    if (event?.__managerTools) {
-      setView("manager");
-      return;
-    }
-    setCurrentEvent(event);
-    localStorage.setItem("currentEvent", JSON.stringify(event));
-    setView("dashboard");
-  };
-
-  const signOut = async () => {
-    if (clockedIn) { alert("Please clock out before signing out."); return; }
-    localStorage.removeItem("valetName");
-    localStorage.removeItem("valetRole");
-    localStorage.removeItem("currentEvent");
-    setValetName(""); setValetRole(""); setCurrentEvent(null);
-    await firebaseSignOut(auth);
-  };
-
-  const leaveEvent = async () => {
-    if (clockedIn && valetRole !== "manager") await clockOut();
-    localStorage.removeItem("currentEvent");
-    setCurrentEvent(null);
-    setTickets([]);
-  };
+  const { handleJoinEvent, signOut, leaveEvent } = useAuth({
+    valetName, valetRole, clockedIn, clockOut,
+    setValetName, setValetRole, setCurrentEvent, setView, setTickets,
+  });
 
   const { createTicket, saveDetails, markDelivered, deleteTicket, handleFillDetails, handleStartRetrieval, handleEditTicket, handleShowQR } = useTickets({
     tickets, valetName, valetRole, currentEvent,
