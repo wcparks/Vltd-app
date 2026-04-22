@@ -9,6 +9,7 @@ const BORDER = "#2a2a2a";
 const MANAGER_PIN = "0711";
 const VALET_PIN = "1111";
 const CASHIER_PIN = "2222";
+const SUPERVISOR_PIN = "3333";
 const MANAGER_NAMES = ["ivan m", "malynda m"];
 
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -49,10 +50,10 @@ export default function PinLogin({ onSuccess }) {
           resolvedName = account.name;
         }
       } catch (e) {
-        role = pinInput === VALET_PIN ? "valet" : pinInput === CASHIER_PIN ? "cashier" : null;
+        role = pinInput === VALET_PIN ? "valet" : pinInput === CASHIER_PIN ? "cashier" : pinInput === SUPERVISOR_PIN ? "supervisor" : null;
       }
       if (!role) {
-        role = pinInput === VALET_PIN ? "valet" : pinInput === CASHIER_PIN ? "cashier" : null;
+        role = pinInput === VALET_PIN ? "valet" : pinInput === CASHIER_PIN ? "cashier" : pinInput === SUPERVISOR_PIN ? "supervisor" : null;
       }
     }
 

@@ -127,7 +127,7 @@ export default function App() {
     }
   }
 
-  if (valetRole === "supervisor") return <SupervisorView user={{ name: valetName, role: valetRole }} tickets={tickets} onSignOut={signOut} onNewTicket={() => setView("new")} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onClockIn={clockIn} onClockOut={clockOut} isClockedIn={clockedIn} />;
+  if (valetRole === "supervisor") return <SupervisorView user={{ name: valetName, role: valetRole }} tickets={tickets} onSignOut={signOut} onNewTicket={createTicket} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onClockIn={clockIn} onClockOut={clockOut} isClockedIn={clockedIn} />;
   if (valetRole === "cashier") return <CashierView eventId={currentEvent?.id} staffName={valetName} onLogout={signOut} />;
 
   if (retrievingAlert) return <RetrievingAlert ticket={retrievingAlert} onDismiss={() => setRetrievingAlert(null)} />;
