@@ -12,7 +12,7 @@
 // ============================================================
 import { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
-import { collection, query, orderBy, onSnapshot, where, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
 const STARS = [5, 4, 3, 2, 1];
 

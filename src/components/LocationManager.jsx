@@ -171,7 +171,8 @@ function LocationDetail({ location: loc, allStaff, onBack, onToggleActive }) {
 
   useEffect(() => {
     if (loc.weekSchedule) setWeekSchedule(loc.weekSchedule);
-  }, [loc.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc.id, loc.weekSchedule]);
 
   async function saveSchedule(newSchedule) {
     setSaving(true);
@@ -180,29 +181,6 @@ function LocationDetail({ location: loc, allStaff, onBack, onToggleActive }) {
     } finally {
       setSaving(false);
     }
-  }
-
-  function toggleDay(i) {
-    const updated = { ...weekSchedule, [i]: { ...weekSchedule[i], active: !weekSchedule[i]?.active } };
-    setWeekSchedule(updated);
-    saveSchedule(updated);
-  }
-
-  function updateTime(i, field, val) {
-    const updated = { ...weekSchedule, [i]: { ...weekSchedule[i], [field]: val } };
-    setWeekSchedule(updated);
-    saveSchedule(updated);
-  }
-
-  function toggleStaff(i, s) {
-    const day = weekSchedule[i] || defaultDaySchedule();
-    const exists = (day.staff || []).find(ds => ds.id === s.id);
-    const newStaff = exists
-      ? day.staff.filter(ds => ds.id !== s.id)
-      : [...(day.staff || []), { id: s.id, name: s.name, role: s.role }];
-    const updated = { ...weekSchedule, [i]: { ...day, staff: newStaff } };
-    setWeekSchedule(updated);
-    saveSchedule(updated);
   }
 
   function fmt(t) {

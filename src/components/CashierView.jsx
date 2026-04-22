@@ -140,7 +140,6 @@ setMSaving(false);
 // ── Edit tab: search tickets ──────────────────────────────
 async function runEditSearch(val) {
 const raw = val.trim().toUpperCase();
-const rawLower = val.trim().toLowerCase();
 if (raw.length < 2) { setEditResults([]); return; }
 try {
 const results = [];

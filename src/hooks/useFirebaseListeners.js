@@ -28,7 +28,7 @@ export function useFirebaseListeners({
       }
     });
     return unsub;
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -36,7 +36,7 @@ export function useFirebaseListeners({
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!authUser) return;
@@ -61,13 +61,13 @@ export function useFirebaseListeners({
       prevTicketsRef.current = newRef;
       setTickets(data);
     });
-  }, [authUser, currentEvent]);
+  }, [authUser, currentEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!authUser) return;
     const q = query(collection(db, "logins"), orderBy("time", "desc"));
     return onSnapshot(q, (snap) => setLogins(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-  }, [authUser]);
+  }, [authUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!valetName) return;
@@ -81,5 +81,5 @@ export function useFirebaseListeners({
       });
       return () => unsub();
     } catch (e) {}
-  }, [valetName, tickets]);
+  }, [valetName, tickets]); // eslint-disable-line react-hooks/exhaustive-deps
 }

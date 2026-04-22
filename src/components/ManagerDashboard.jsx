@@ -56,7 +56,6 @@ export default function ManagerDashboard({ tickets = [], todayTickets = [] }) {
 
   // Revenue / tips
   const totalTips = rangeTickets.reduce((s, t) => s + (t.tip || 0), 0);
-  const deliveredCount = rangeTickets.filter(t => t.status === 'delivered').length;
   const ratedTickets = rangeTickets.filter(t => t.rating > 0);
   const avgRating = ratedTickets.length
     ? (ratedTickets.reduce((s, t) => s + t.rating, 0) / ratedTickets.length).toFixed(1)

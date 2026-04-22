@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
 import {
-  collection, addDoc, getDocs, doc, getDoc, updateDoc,
-  onSnapshot, query, where, orderBy, serverTimestamp, deleteDoc
+  collection, getDocs, doc, updateDoc,
+  onSnapshot, query, where, deleteDoc
 } from 'firebase/firestore';
 import { createEvent, getAllEvents, closeEvent } from '../services/eventService';
 
@@ -36,7 +36,7 @@ export default function EventManager({ managerName }) {
     if (!form.name || !form.location || !form.passcode) return;
     setLoading(true);
     try {
-      const id = await createEvent({
+      await createEvent({
         ...form,
         passcode: form.passcode.toUpperCase(),
         spotsNeeded: parseInt(form.spotsNeeded) || 4,

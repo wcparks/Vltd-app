@@ -1,7 +1,4 @@
-import { useState, useRef } from 'react';
-import { db } from '../config/firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
-import { getNextTicketNumber } from '../services/eventService';
+import { useState } from 'react';
 import { createManualTicketService } from '../services/ticketService';
 
 const ACCENT = '#C8F04B';

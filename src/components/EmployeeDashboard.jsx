@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../config/firebase";
 import {
-  collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, doc, getDoc
+  collection, query, where, onSnapshot, addDoc, serverTimestamp
 } from "firebase/firestore";
 import EventJoin from "./EventJoin";
 
@@ -26,7 +26,7 @@ export default function EmployeeDashboard({
   const [requestingEvent, setRequestingEvent] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [myLocations, setMyLocations] = useState([]);
-  const [isScheduledToday, setIsScheduledToday] = useState(false);
+  const [, setIsScheduledToday] = useState(false);
   const [clockWindowStatus, setClockWindowStatus] = useState("not_scheduled"); // 'too_early' | 'open' | 'too_late' | 'not_scheduled'
 
   function today() { return new Date().toISOString().slice(0, 10); }
