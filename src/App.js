@@ -18,7 +18,10 @@ import PrivacyPage from "./components/PrivacyPage";
 import ManualTicket from "./components/ManualTicket";
 import EmployeeDashboard from "./components/EmployeeDashboard";
 import ValetDashboard from "./components/ValetDashboard";
+import BossView from "./components/BossView";
 import SupervisorView from "./components/SupervisorView";
+import ManagerDashboard from "./components/ManagerDashboard";
+
 
 function today() { return new Date().toISOString().slice(0, 10); }
 
@@ -68,7 +71,7 @@ export default function App() {
     setValetName, setValetRole, setCurrentEvent, setView, setTickets,
   });
 
-  const { createTicket, saveDetails, markDelivered, deleteTicket, handleFillDetails, handleStartRetrieval, handleEditTicket, handleShowQR } = useTickets({
+  const { createTicket, markParked, saveDetails, markDelivered, deleteTicket, handleFillDetails, handleStartRetrieval, handleEditTicket, handleShowQR } = useTickets({
     tickets, valetName, valetRole, currentEvent,
     activeTicket, saving, carDetails, form, ticketPhotos, formPhoto, spotPhoto,
     setLoading, setSaving, setView, setShowQR, setNewTicket, setActiveTicket,
@@ -81,7 +84,7 @@ export default function App() {
   if (authUser === undefined) {
     return (
       <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#444", fontSize: "10px", letterSpacing: "2px", fontFamily: "'DM Mono', monospace" }}>LOADING...</div>
+        <div style={{ color: "#444", fontSize: "10px", letterSpacing: "2px" }}>LOADING...</div>
       </div>
     );
   }
@@ -98,9 +101,7 @@ export default function App() {
 
   // -- Special routes -----------------------------------------
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
-  if (window.location.pathname === "/reviews") return <ReviewsPage isManager={valetRole === "manager"} />;
-  if (window.location.pathname === "/ticket") { window.location.replace(window.location.href.replace("/ticket", "/ticket.html")); return null; }
-
+  if (window.location.pathname === "/reviews") return <ReviewsPage isManager={valetRole === "manager" || valetRole === "boss"} />;
   // -- PIN login ----------------------------------------------
   if (!valetName) return <PinLogin onSuccess={(name, role) => { setValetName(name); setValetRole(role); }} />;
 
@@ -114,7 +115,7 @@ export default function App() {
   );
 
   if (!currentEvent) {
-    if (valetRole === "manager" && view === "manager") {
+    if ((valetRole === "manager" || valetRole === "boss") && view === "manager") {
       // fall through to manager view
     } else {
       return (
@@ -126,9 +127,6 @@ export default function App() {
       );
     }
   }
-
-  if (valetRole === "supervisor") return <SupervisorView user={{ name: valetName, role: valetRole }} tickets={tickets} onSignOut={signOut} onNewTicket={createTicket} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onClockIn={clockIn} onClockOut={clockOut} isClockedIn={clockedIn} />;
-  if (valetRole === "cashier") return <CashierView eventId={currentEvent?.id} staffName={valetName} onLogout={signOut} />;
 
   if (retrievingAlert) return <RetrievingAlert ticket={retrievingAlert} onDismiss={() => setRetrievingAlert(null)} />;
 
@@ -175,6 +173,7 @@ export default function App() {
       saving={saving}
       onSave={saveDetails}
       onBack={() => setView("dashboard")}
+      valetRole={valetRole}
     />
   );
 
@@ -184,17 +183,48 @@ export default function App() {
     <TicketView
       ticket={liveTicket}
       valetRole={valetRole}
+      valetName={valetName}
       onBack={() => setView("dashboard")}
       onFillDetails={handleFillDetails}
       onStartRetrieval={handleStartRetrieval}
       onMarkDelivered={(id) => { markDelivered(id); setView("dashboard"); }}
+      onMarkParked={(ticket) => markParked(ticket.id)}
       onDelete={deleteTicket}
       onShowQR={handleShowQR}
       onEdit={handleEditTicket}
     />
   );
 
-  // -- Manager view -------------------------------------------
+  if (showManualTicket) return (
+    <ManualTicket
+      valetName={valetName} valetRole={valetRole} currentEvent={currentEvent}
+      onClose={() => { setShowManualTicket(false); setEditTicket(null); }}
+      ticketId={editTicket?.id || null}
+      initialData={editTicket}
+      setNewTicket={setNewTicket} setShowQR={setShowQR} setTicketPhotos={setTicketPhotos}
+    />
+  );
+  const MANAGER_TOOL_VIEWS = ['manager', 'employees', 'staff', 'events', 'locations', 'reviews', 'schedule'];
+  if (valetRole === 'boss' && MANAGER_TOOL_VIEWS.includes(view)) return <ManagerView valetName={valetName} valetRole={valetRole} currentEvent={currentEvent} tickets={tickets} todayTickets={todayTickets} logins={logins} clockedIn={clockedIn} clockInTime={clockInTime} initialSubView={view === 'manager' ? null : view} onBack={() => { setView("boss"); }} onSelectTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onCreateTicket={createTicket} onManualTicket={() => setShowManualTicket(true)} onClockIn={clockIn} onClockOut={clockOut} onLeaveEvent={leaveEvent} onSignOut={signOut} />;
+  if (valetRole === 'boss') return (
+    <BossView
+      valetName={valetName} valetRole={valetRole} currentEvent={currentEvent}
+      tickets={tickets} todayTickets={todayTickets} logins={logins}
+      clockedIn={clockedIn} clockInTime={clockInTime}
+      isOnline={isOnline} loading={loading}
+      search={search} showSearch={showSearch}
+      onClockIn={clockIn} onClockOut={clockOut}
+      onCreateTicket={createTicket} onSearch={setSearch} onToggleSearch={() => setShowSearch(prev => !prev)}
+      onShowSummary={() => setShowShiftSummary(true)} onManualTicket={() => setShowManualTicket(true)}
+      onSelectTicket={(t) => { setActiveTicket(t); setView("ticket"); }}
+      onLeaveEvent={leaveEvent} onSignOut={signOut}
+      onNavigate={(key) => { setView(key); }}
+    />
+  );
+  if (valetRole === "supervisor") return <SupervisorView user={{ name: valetName, role: valetRole }} currentEvent={currentEvent} tickets={tickets} onSignOut={signOut} onNewTicket={createTicket} onManualTicket={() => setShowManualTicket(true)} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} onClockIn={clockIn} onClockOut={clockOut} isClockedIn={clockedIn} onShowSummary={() => setShowShiftSummary(true)} onLeaveEvent={leaveEvent} />;
+  if (valetRole === "cashier") return <CashierView eventId={currentEvent?.id} staffName={valetName} onLogout={signOut} onNewTicket={createTicket} onViewTicket={(t) => { setActiveTicket(t); setView("ticket"); }} loading={loading} onLeaveEvent={leaveEvent} />;
+
+  // -- Manager view (tools sub-screen) -----------------------
   if (view === "manager") return (
     <ManagerView
       valetName={valetName}
@@ -203,23 +233,44 @@ export default function App() {
       tickets={tickets}
       todayTickets={todayTickets}
       logins={logins}
+      clockedIn={clockedIn}
+      clockInTime={clockInTime}
       onBack={() => { setView(currentEvent ? "dashboard" : "join"); }}
       onSelectTicket={(t) => { setActiveTicket(t); setView("ticket"); }}
+      onCreateTicket={createTicket}
+      onManualTicket={() => setShowManualTicket(true)}
+      onClockIn={clockIn}
+      onClockOut={clockOut}
+      onLeaveEvent={leaveEvent}
+      onSignOut={signOut}
     />
   );
 
-  // -- Manual ticket ------------------------------------------
-  if (showManualTicket) return (
-    <ManualTicket
-      valetName={valetName} valetRole={valetRole} currentEvent={currentEvent}
-      onClose={() => { setShowManualTicket(false); setEditTicket(null); }}
-      ticketId={editTicket?.id || null}
-      initialData={editTicket}
+  // -- Manager main dashboard (after joining event/location) --
+  if (valetRole === "manager") return (
+    <ManagerDashboard
+      tickets={tickets}
+      todayTickets={todayTickets}
+      logins={logins}
+      valetName={valetName}
+      valetRole={valetRole}
+      currentEvent={currentEvent}
+      clockedIn={clockedIn}
+      clockInTime={clockInTime}
+      onNavigate={(key) => { if (key === "manager") setView("manager"); else setView(key); }}
+      onSelectTicket={(t) => { setActiveTicket(t); setView("ticket"); }}
+      onCreateTicket={createTicket}
+      onManualTicket={() => setShowManualTicket(true)}
+      onClockIn={clockIn}
+      onClockOut={clockOut}
+      onLeaveEvent={leaveEvent}
+      onSignOut={signOut}
     />
   );
 
-  // -- Dashboard ----------------------------------------------
+  // -but- Dashboard ----------------------------------------------
   return (
+    <div className="font-sans bg-[#050505] text-white min-h-screen">
     <ValetDashboard
       valetName={valetName}
       valetRole={valetRole}
@@ -247,5 +298,6 @@ export default function App() {
       onLeaveEvent={leaveEvent}
       onSignOut={signOut}
     />
+    </div>
   );
 }
