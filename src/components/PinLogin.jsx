@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { db, requestNotificationPermission } from "../config/firebase";
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { getAuth, signInAnonymously } from "firebase/auth";
 import { upsertEmployee } from "./EmployeeProfiles";
 
-const ACCENT = "#C8F04B";
-const BG = "#0D0D0D";
-const BORDER = "#2a2a2a";
-const MANAGER_PIN = "0711";
+const ACCENT = "#D4A017";
+const BG = "#0a0a0a";
+const BORDER = "#2c2c2c";
+const MANAGER_PIN = "0809";
 const VALET_PIN = "1111";
 const CASHIER_PIN = "2222";
 const SUPERVISOR_PIN = "3333";
@@ -15,11 +16,11 @@ const MANAGER_NAMES = ["ivan m", "malynda m"];
 function today() { return new Date().toISOString().slice(0, 10); }
 
 const S = {
-  app: { background: BG, minHeight: "100vh", color: "#fff", fontFamily: "'DM Mono', monospace" },
-  logo: { fontFamily: "sans-serif", fontSize: "40px", fontWeight: 900, color: ACCENT },
+  app: { background: BG, minHeight: "100vh", color: "#fff" },
+  logo: { fontSize: "40px", fontWeight: 700, color: ACCENT, letterSpacing: "1px" },
   sub: { fontSize: "10px", color: "#999", letterSpacing: "2px", marginTop: "2px" },
-  input: { width: "100%", background: "#111", border: `1px solid ${BORDER}`, borderRadius: "10px", padding: "13px", color: "#fff", fontFamily: "'DM Mono', monospace", fontSize: "14px", marginBottom: "10px", outline: "none", boxSizing: "border-box" },
-  btn: { background: ACCENT, color: "#000", border: "none", borderRadius: "12px", padding: "15px", width: "100%", fontFamily: "sans-serif", fontSize: "13px", fontWeight: 700, cursor: "pointer", marginBottom: "8px", letterSpacing: "1px" },
+  input: { width: "100%", background: "#111", border: `1px solid ${BORDER}`, borderRadius: "10px", padding: "13px", color: "#fff", fontSize: "14px", marginBottom: "10px", outline: "none", boxSizing: "border-box" },
+  btn: { background: ACCENT, color: "#000", border: "none", borderRadius: "12px", padding: "15px", width: "100%", fontSize: "13px", fontWeight: 700, cursor: "pointer", marginBottom: "8px", letterSpacing: "1px" },
   label: { fontSize: "9px", color: "#aaa", letterSpacing: "2px", marginBottom: "6px" },
 };
 
@@ -58,8 +59,10 @@ export default function PinLogin({ onSuccess }) {
     }
 
     if (!role) { setPinError("Incorrect PIN. Contact your manager."); return; }
+    const auth = getAuth();
+    await signInAnonymously(auth);
     await addDoc(collection(db, "logins"), { name: resolvedName, role, time: serverTimestamp(), date: today() });
-    if (role !== "manager") await upsertEmployee(resolvedName).catch(() => {});
+    if (role !== "manager" && role !== "boss") await upsertEmployee(resolvedName).catch(() => {});
     try {
       const token = await requestNotificationPermission(resolvedName);
       if (token) await addDoc(collection(db, "valetTokens"), { name: resolvedName, role, token, date: today(), time: serverTimestamp() });
@@ -71,7 +74,7 @@ export default function PinLogin({ onSuccess }) {
 
   return (
     <div style={{ ...S.app, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", minHeight: "100vh" }}>
-      <div style={{ ...S.logo, marginBottom: "6px" }}>VLTD</div>
+      <div style={{ ...S.logo, marginBottom: "6px" }}>WC VALET</div>
       <div style={{ ...S.sub, marginBottom: "48px" }}>VALET - REDEFINED</div>
       <div style={{ width: "100%", maxWidth: "320px" }}>
         <div style={S.label}>YOUR NAME</div>
