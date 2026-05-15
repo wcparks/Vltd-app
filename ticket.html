@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>WC VALET · Your Ticket</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Space Grotesk', -apple-system, system-ui, sans-serif; }
+  .star-btn { opacity: 0.25; color: #facc15; transition: opacity .12s; font-size: 2rem; cursor: pointer; background: none; border: none; padding: 0 4px; }
+  .star-btn.lit { opacity: 1; }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body class="bg-[#050505] text-white min-h-screen">
+
+<!-- LOADING -->
+<div id="loading" class="flex items-center justify-center min-h-screen">
+  <div class="text-xs text-gray-600 tracking-widest">LOADING...</div>
+</div>
+
+<!-- ERROR -->
+<div id="error" class="hidden flex items-center justify-center min-h-screen px-6">
+  <div class="text-center">
+    <div class="text-[#C8FF3A] text-lg font-semibold mb-2">WC VALET</div>
+    <div class="text-gray-400 text-sm">Ticket not found.<br>Check the QR code and try again.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="hidden px-4 pb-24">
+
+  <!-- HEADER -->
+  <div class="text-center pt-8 mb-6">
+    <div class="text-[#C8FF3A] font-semibold text-lg tracking-widest">WC VALET</div>
+    <div class="text-sm text-gray-400">Your vehicle is in good hands</div>
+  </div>
+
+  <!-- HERO PHOTOS -->
+  <div class="flex gap-3 mb-6">
+    <div class="flex-1 relative h-52 rounded-2xl overflow-hidden bg-[#0d0d0d] border border-white/10">
+      <img id="photo-front" src="" alt="" class="hidden w-full h-full object-cover">
+      <div id="photo-front-placeholder" class="w-full h-full flex items-center justify-center">
+        <span class="text-xs text-gray-600 tracking-widest">FRONT</span>
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
+      <div class="absolute bottom-3 left-3 text-xs text-white/70 tracking-wide">FRONT</div>
+    </div>
+    <div class="flex-1 relative h-52 rounded-2xl overflow-hidden bg-[#0d0d0d] border border-white/10">
+      <img id="photo-spot" src="" alt="" class="hidden w-full h-full object-cover">
+      <div id="photo-spot-placeholder" class="w-full h-full flex items-center justify-center">
+        <span class="text-xs text-gray-600 tracking-widest">PARKED</span>
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
+      <div class="absolute bottom-3 left-3 text-xs text-white/70 tracking-wide">PARKED</div>
+    </div>
+  </div>
+
+  <!-- VEHICLE -->
+  <div class="text-center mb-6 mt-4">
+    <div class="text-[12px] tracking-[0.4em] text-gray-500 mb-2">
+      TICKET
+    </div>
+    <div class="text-[56px] font-extrabold tracking-[0.08em] leading-none text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]" id="ticket-num-label">
+      #0011
+    </div>
+    <div id="status-label" class="font-semibold text-lg text-yellow-400 mt-3">PARKED</div>
+  </div>
+
+  <!-- OPTIONAL NAME -->
+  <div id="name-section" class="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 mb-4">
+    <div class="text-xs text-gray-400 mb-3">YOUR NAME (OPTIONAL)</div>
+    <input
+      id="name-input"
+      type="text"
+      maxlength="30"
+      placeholder="Your name..."
+      class="w-full bg-black border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white outline-none placeholder-gray-700 mb-3"
+    >
+    <button id="save-name-btn" class="w-full bg-white/5 border border-white/10 text-gray-300 text-xs py-2.5 rounded-lg">
+      SAVE NAME
+    </button>
+    <div id="name-saved" class="hidden text-xs text-[#C8FF3A] text-center mt-2">✓ Name saved!</div>
+  </div>
+
+  <!-- REQUEST BUTTON -->
+  <div id="getcar-section">
+    <button id="getcar-btn"
+      class="w-full bg-[#C8FF3A] text-black py-4 rounded-xl font-semibold text-[15px] tracking-wide">
+      REQUEST VEHICLE
+    </button>
+  </div>
+
+  <!-- AFTER REQUEST -->
+  <div id="onway-section" class="hidden mt-6 space-y-4">
+
+    <!-- STATUS CONFIRM -->
+    <div class="bg-[#C8FF3A]/10 border border-[#C8FF3A]/30 rounded-2xl p-5 text-center">
+      <div id="onway-headline" class="text-[#C8FF3A] font-bold text-xl tracking-wide mb-1">Your vehicle is on the way</div>
+      <div id="onway-subline" class="text-sm text-white/50">Leave a tip or review while you wait</div>
+    </div>
+
+    <!-- TIP -->
+    <div class="bg-[#0d0d0d] border border-[#C8FF3A]/20 rounded-xl p-4">
+      <div class="text-sm font-semibold mb-3 text-[#C8FF3A]/80">Leave a Tip (Optional)</div>
+
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <button class="tip-btn border border-white/10 py-3 rounded-xl text-sm text-gray-400" data-amt="2">$2</button>
+        <button class="tip-btn border border-white/10 py-3 rounded-xl text-sm text-gray-400" data-amt="5">$5</button>
+        <button class="tip-btn border border-white/10 py-3 rounded-xl text-sm text-gray-400" data-amt="10">$10</button>
+        <button class="tip-btn border border-white/10 py-3 rounded-xl text-sm text-gray-400" data-amt="20">$20</button>
+      </div>
+
+      <div class="relative mb-4">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">$</span>
+        <input
+          id="custom-tip"
+          type="number" min="1" max="999"
+          placeholder="Custom amount"
+          class="w-full bg-black border border-white/10 rounded-xl py-3 pl-7 pr-3 text-sm text-white outline-none placeholder-gray-700"
+        >
+      </div>
+
+      <div class="flex gap-3">
+        <a id="cashapp-btn" href="#"
+          class="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#00D632] text-black font-semibold text-sm pointer-events-none opacity-30"
+          target="_blank" rel="noopener noreferrer">
+          <span class="text-lg font-black leading-none">$</span> Cash App
+        </a>
+        <a id="venmo-btn" href="#"
+          class="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#008CFF] text-white font-semibold text-sm pointer-events-none opacity-30"
+          target="_blank" rel="noopener noreferrer">
+          <span class="text-lg font-black leading-none">V</span> Venmo
+        </a>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="bg-[#0d0d0d] border border-white/10 rounded-xl p-4">
+      <div class="text-sm font-semibold mb-3 text-center">How was your experience?</div>
+
+      <div class="flex justify-center gap-1 mb-4">
+        <button class="star-btn" data-star="1">★</button>
+        <button class="star-btn" data-star="2">★</button>
+        <button class="star-btn" data-star="3">★</button>
+        <button class="star-btn" data-star="4">★</button>
+        <button class="star-btn" data-star="5">★</button>
+      </div>
+
+      <textarea
+        id="review-text"
+        placeholder="Optional comment..."
+        rows="3"
+        class="w-full bg-black border border-white/10 rounded-lg p-3 text-sm text-white outline-none placeholder-gray-700 resize-none mb-3"
+      ></textarea>
+
+      <button id="review-btn" disabled
+        class="w-full border border-[#C8FF3A]/30 text-[#C8FF3A] py-3 rounded-xl text-xs font-semibold tracking-widest disabled:opacity-30">
+        SUBMIT REVIEW
+      </button>
+      <div id="review-msg" class="hidden text-xs text-[#C8FF3A] text-center mt-2">✓ Thanks for the feedback!</div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc, serverTimestamp, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCoLb5irRmwJIyBVxC2T46saECG5ZXKXJU",
+  authDomain:        "wc-valet-app.firebaseapp.com",
+  projectId:         "wc-valet-app",
+  storageBucket:     "wc-valet-app.firebasestorage.app",
+  messagingSenderId: "425991585304",
+  appId:             "1:425991585304:web:83a95246daa77b2e5a0d6d",
+};
+
+const CASHAPP_HANDLE = "mederos";
+const VENMO_HANDLE   = "mimzy212";
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+const params = new URLSearchParams(window.location.search);
+const code   = params.get("code");
+
+const autoOpenTips = true;
+
+let ticketDocId  = null;
+let ticketData   = null;
+let selectedTip  = 0;
+let selectedStar = 0;
+
+// ── Boot — sign in anonymously first so writes pass security rules ────
+if (!code) {
+  show("error");
+} else {
+  signInAnonymously(auth)
+    .catch(() => {}) // proceed even if anon auth fails
+    .finally(() => loadTicket(code).catch(() => show("error")));
+}
+
+function show(id) {
+  ["loading","error","main"].forEach(i => {
+    document.getElementById(i).classList.toggle("hidden", i !== id);
+  });
+}
+
+// ── Load ticket ───────────────────────────────────────────────────────
+async function loadTicket(code) {
+  const snap = await getDocs(query(collection(db, "tickets"), where("confirmCode", "==", code)));
+  if (snap.empty) { show("error"); return; }
+
+  ticketDocId = snap.docs[0].id;
+  ticketData  = snap.docs[0].data();
+
+  // Ticket number
+  const num = ticketData.ticketNum || ticketData.paperTicketNum || ticketData.ticketNumber || "";
+  const numEl = document.getElementById("ticket-num-label");
+  numEl.textContent = num ? `#${num}` : "#----";
+
+  // Vehicle
+  const carParts = [ticketData.color, ticketData.make, ticketData.model].filter(Boolean);
+  const carDescEl = document.getElementById("car-desc");
+  if (carDescEl) carDescEl.textContent = carParts.join(" ") || ticketData.car || "--";
+  const plateEl = document.getElementById("plate");
+  if (plateEl) plateEl.textContent = ticketData.plate || "--";
+
+  // Photos
+  const photos   = ticketData.photos || [];
+  const frontUrl = photos.find(p => p.type === "front")?.url || ticketData.photoURL || "";
+  const spotUrl  = ticketData.spotPhotoURL || "";
+  if (frontUrl) { setPhoto("front", frontUrl); }
+  if (spotUrl)  { setPhoto("spot",  spotUrl);  }
+
+  // Name section
+  if (ticketData.customerName) {
+    document.getElementById("name-section").classList.add("hidden");
+  }
+
+  show("main");
+  wireEvents();
+
+  if (autoOpenTips) {
+    document.getElementById("name-section").classList.add("hidden");
+    document.getElementById("getcar-section").classList.add("hidden");
+    document.getElementById("onway-section").classList.remove("hidden");
+  }
+
+  // Real-time listener — reacts when valet marks car as retrieving/delivered
+  onSnapshot(doc(db, "tickets", ticketDocId), (snap) => {
+    if (!snap.exists()) return;
+    applyStatus(snap.data().status || "parked");
+  });
+}
+
+function setPhoto(slot, url) {
+  document.getElementById(`photo-${slot}`).src = url;
+  document.getElementById(`photo-${slot}`).classList.remove("hidden");
+  document.getElementById(`photo-${slot}-placeholder`).classList.add("hidden");
+}
+
+function setStatus(s) {
+  const el  = document.getElementById("status-label");
+  const map = {
+    parked:     ["PARKED",                    "text-yellow-400"],
+    ticketed:   ["TICKETED",                  "text-blue-400"],
+    retrieving: ["RETRIEVING YOUR VEHICLE...", "text-[#C8FF3A]"],
+    delivered:  ["DELIVERED",                 "text-gray-500"],
+  };
+  const [text, cls] = map[s] || map.parked;
+  el.textContent = text;
+  el.className   = `font-semibold text-lg ${cls}`;
+}
+
+function applyStatus(s) {
+  setStatus(s);
+  if (s === "retrieving" || s === "delivered") {
+    document.getElementById("getcar-section").classList.add("hidden");
+    document.getElementById("onway-section").classList.remove("hidden");
+  }
+  const headline = document.getElementById("onway-headline");
+  const subline  = document.getElementById("onway-subline");
+  if (!headline || !subline) return;
+  if (s === "delivered") {
+    headline.textContent = "Vehicle Delivered";
+    subline.textContent  = "Thank you for choosing our valet service";
+  } else {
+    headline.textContent = "Your vehicle is on the way";
+    subline.textContent  = "Leave a tip or review while you wait";
+  }
+}
+
+function updatePayLinks(amt) {
+  const note  = encodeURIComponent("WC VALET Valet Tip");
+  const ca    = document.getElementById("cashapp-btn");
+  const vn    = document.getElementById("venmo-btn");
+  if (amt > 0) {
+    ca.href = `https://cash.app/$${CASHAPP_HANDLE}/${amt}`;
+    vn.href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${amt}&note=${note}`;
+    ca.classList.remove("pointer-events-none", "opacity-30");
+    vn.classList.remove("pointer-events-none", "opacity-30");
+    if (ticketDocId) updateDoc(doc(db, "tickets", ticketDocId), { tipAmountSelected: amt }).catch(() => {});
+  } else {
+    ca.href = "#"; vn.href = "#";
+    ca.classList.add("pointer-events-none", "opacity-30");
+    vn.classList.add("pointer-events-none", "opacity-30");
+  }
+}
+
+// ── Wire all events after DOM is ready ───────────────────────────────
+function wireEvents() {
+  // Save name
+  document.getElementById("save-name-btn").addEventListener("click", async () => {
+    const name = document.getElementById("name-input").value.trim();
+    if (!name || !ticketDocId) return;
+    await updateDoc(doc(db, "tickets", ticketDocId), { customerName: name }).catch(() => {});
+    document.getElementById("name-saved").classList.remove("hidden");
+  });
+
+  // Request vehicle — optimistic: show tip/review immediately, write in background
+  document.getElementById("getcar-btn").addEventListener("click", () => {
+    const btn = document.getElementById("getcar-btn");
+    btn.disabled    = true;
+    btn.textContent = "REQUESTING...";
+
+    applyStatus("retrieving");
+
+    // Background write + notify (non-blocking)
+    if (ticketDocId) {
+      updateDoc(doc(db, "tickets", ticketDocId), { status: "retrieving", requestedAt: serverTimestamp() }).catch(console.error);
+    }
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "car_requested", channel: "whatsapp",
+        phone:        ticketData?.customerPhone || "",
+        ticketNum:    ticketData?.ticketNum,
+        car:          ticketData?.car,
+        color:        ticketData?.color,
+        spot:         ticketData?.spot,
+        customerName: ticketData?.customerName,
+        eventId:      ticketData?.eventId || null,
+      }),
+    }).catch(() => {});
+  });
+
+  // Tip presets
+  document.querySelectorAll(".tip-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tip-btn").forEach(b => {
+        b.classList.remove("border-[#C8FF3A]", "text-[#C8FF3A]", "bg-[#C8FF3A]/10");
+        b.classList.add("border-white/10", "text-gray-400");
+      });
+      btn.classList.add("border-[#C8FF3A]", "text-[#C8FF3A]", "bg-[#C8FF3A]/10");
+      btn.classList.remove("border-white/10", "text-gray-400");
+      document.getElementById("custom-tip").value = "";
+      selectedTip = parseFloat(btn.dataset.amt);
+      updatePayLinks(selectedTip);
+    });
+  });
+
+  // Custom tip
+  document.getElementById("custom-tip").addEventListener("input", e => {
+    document.querySelectorAll(".tip-btn").forEach(b => {
+      b.classList.remove("border-[#C8FF3A]", "text-[#C8FF3A]", "bg-[#C8FF3A]/10");
+      b.classList.add("border-white/10", "text-gray-400");
+    });
+    const amt = parseFloat(e.target.value);
+    selectedTip = (!isNaN(amt) && amt > 0) ? amt : 0;
+    updatePayLinks(selectedTip);
+  });
+
+  // Stars
+  document.querySelectorAll(".star-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedStar = parseInt(btn.dataset.star);
+      document.querySelectorAll(".star-btn").forEach((s, i) => s.classList.toggle("lit", i < selectedStar));
+      document.getElementById("review-btn").disabled = false;
+    });
+  });
+
+  // Submit review
+  document.getElementById("review-btn").addEventListener("click", async () => {
+    if (!ticketDocId || !selectedStar) return;
+    const reviewText = document.getElementById("review-text").value.trim();
+    const btn        = document.getElementById("review-btn");
+    const msg        = document.getElementById("review-msg");
+    btn.disabled    = true;
+    btn.textContent = "SAVING...";
+    try {
+      await updateDoc(doc(db, "tickets", ticketDocId), {
+        rating:     selectedStar,
+        review:     reviewText || "",
+        reviewedAt: serverTimestamp(),
+      });
+      msg.textContent = "✓ Thanks for the feedback!";
+      msg.style.color = "";
+      msg.classList.remove("hidden");
+      btn.textContent = "✓ SUBMITTED";
+    } catch (e) {
+      console.error("Review error:", e);
+      btn.disabled    = false;
+      btn.textContent = "SUBMIT REVIEW";
+      msg.textContent = "Error saving — try again.";
+      msg.style.color = "#ff4444";
+      msg.classList.remove("hidden");
+    }
+  });
+}
+</script>
+</body>
+</html>

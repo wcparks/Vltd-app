@@ -1,0 +1,20 @@
+{
+  "short_name": "WC VALET",
+  "name": "WC Valet",
+  "icons": [
+    {
+      "src": "wc-valet-logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "wc-valet-logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0D0D0D",
+  "background_color": "#0D0D0D"
+}
